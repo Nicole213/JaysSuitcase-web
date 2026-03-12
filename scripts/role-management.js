@@ -60,7 +60,9 @@ const systemMenus = [
         name: '库存管理',
         icon: '📦',
         children: [
-            { id: 'stock-detail', name: '库存明细', permissions: ['查看', '锁定', '解锁', '清空', '导出'] }
+            { id: 'stock-detail', name: '成品明细', permissions: ['查看', '锁定', '解锁', '清空', '导出'] },
+            { id: 'mold-detail', name: '模具明细', permissions: ['查看', '锁定', '解锁', '清空', '导出'] },
+            { id: 'auxiliary-detail', name: '辅材明细', permissions: ['查看', '锁定', '解锁', '清空', '导出'] }
         ]
     },
     {
@@ -68,7 +70,8 @@ const systemMenus = [
         name: '任务管理',
         icon: '📋',
         children: [
-            { id: 'task-list', name: '任务列表', permissions: ['查看', '加急', '强制完成', '取消', '导出'] }
+            { id: 'task-list', name: '堆垛机任务管理', permissions: ['查看', '置顶', '强制完成', '取消', '导出'] },
+            { id: 'agv-task', name: 'AGV任务管理', permissions: ['查看', '置顶', '强制完成', '取消', '导出'] }
         ]
     },
     {
@@ -635,7 +638,7 @@ function getPermissionDescription(permission) {
         '解锁': '可以解锁库存',
         '清空': '可以清空库存',
         '导出': '可以导出数据',
-        '加急': '可以将任务设置为加急',
+        '置顶': '可以将任务设置为置顶',
         '强制完成': '可以强制完成任务',
         '取消': '可以取消任务',
         '禁用': '可以禁用用户',

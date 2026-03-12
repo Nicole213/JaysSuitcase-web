@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGV平库通道功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+        .feature-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-list li::before {
+            content: "✓";
+            color: #52c41a;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .test-link {
+            display: inline-block;
+            background-color: #667eea;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+        }
+        .test-link:hover {
+            background-color: #5568d3;
+        }
+        .note {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AGV平库通道管理功能测试</h1>
+        
+        <div class="test-section">
+            <h2>功能概述</h2>
+            <p>AGV平库通道管理是仓库管理系统中的核心功能模块，用于管理AGV自动化平库的通道配置和运营控制。</p>
+        </div>
+
+        <div class="test-section">
+            <h2>主要功能特性</h2>
+            <ul class="feature-list">
+                <li>通道编码和名称管理</li>
+                <li>所属库区关联配置</li>
+                <li>库位结构设置（单深/双深）</li>
+                <li>状态控制（启用/禁用）</li>
+                <li>备注信息记录</li>
+                <li>创建时间跟踪</li>
+                <li>多条件查询检索</li>
+                <li>完整的CRUD操作</li>
+                <li>分页数据展示</li>
+                <li>特殊禁用确认机制</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>列表展示字段</h2>
+            <ul class="feature-list">
+                <li>通道编码 - 唯一标识符</li>
+                <li>通道名称 - 便于识别的名称</li>
+                <li>所属库区 - 关联的库区信息</li>
+                <li>库位结构 - 单深或双深配置</li>
+                <li>状态 - 启用或禁用状态</li>
+                <li>备注 - 附加说明信息</li>
+                <li>创建时间 - 记录创建时间</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>查询功能</h2>
+            <ul class="feature-list">
+                <li>按通道编码模糊查询</li>
+                <li>按通道名称模糊查询</li>
+                <li>按所属库区精确筛选</li>
+                <li>按状态筛选</li>
+                <li>支持组合查询条件</li>
+                <li>查询结果实时过滤</li>
+                <li>重置查询条件</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>操作功能</h2>
+            <ul class="feature-list">
+                <li>新增通道 - 所有字段可编辑</li>
+                <li>编辑通道 - 通道编码不可修改</li>
+                <li>删除通道 - 需要确认操作</li>
+                <li>启用通道 - 恢复正常任务分配</li>
+                <li>禁用通道 - 特殊提示确认机制</li>
+                <li>表单数据验证</li>
+                <li>操作结果反馈</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>特殊功能说明</h2>
+            <ul class="feature-list">
+                <li>编辑模式下通道编码字段自动禁用</li>
+                <li>禁用操作显示特殊警告提示</li>
+                <li>禁用提示："禁用后堆垛机将不再执行该巷道的出入库任务，是否确认？"</li>
+                <li>启用操作恢复正常任务分配</li>
+                <li>通道编码唯一性验证</li>
+                <li>所属库区必选验证</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>测试数据</h2>
+            <p>系统预置了6条测试数据，涵盖不同库区、结构和状态：</p>
+            <ul class="feature-list">
+                <li>CH001 - AGV平库通道001，属于库区001，单深结构</li>
+                <li>CH002 - AGV平库通道002，属于库区001，双深结构</li>
+                <li>CH003 - AGV平库通道003，属于库区002，状态禁用</li>
+                <li>CH004 - AGV平库通道004，属于库区002，备用通道</li>
+                <li>CH005 - AGV平库通道005，属于库区003，新建通道</li>
+                <li>CH006 - AGV平库通道006，属于库区003，扩展通道</li>
+            </ul>
+        </div>
+
+        <a href="pages/AGV平库通道.html" class="test-link" target="_blank">
+            🚀 打开AGV平库通道管理页面
+        </a>
+
+        <div class="note success">
+            <strong>测试说明：</strong>
+            <br>1. 点击上方链接打开AGV平库通道管理页面
+            <br>2. 测试各项功能：查询、新增、编辑、删除、状态切换
+            <br>3. 重点测试禁用操作的特殊提示机制
+            <br>4. 验证编辑模式下通道编码不可修改
+            <br>5. 检查表单验证和数据交互
+        </div>
+
+        <div class="note">
+            <strong>注意事项：</strong>
+            <br>• 当前使用模拟数据，实际项目中需要对接后端API
+            <br>• 禁用操作会显示特殊的确认对话框
+            <br>• 编辑时通道编码字段会自动禁用
+            <br>• 页面刷新后数据会重置为初始状态
+        </div>
+    </div>
+</body>
+</html>

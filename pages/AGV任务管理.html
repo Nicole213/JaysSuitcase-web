@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>任务列表</title>
+    <title>AGV任务管理</title>
     <link rel="stylesheet" href="../styles/pages.css">
-    <link rel="stylesheet" href="../styles/task-list.css">
+    <link rel="stylesheet" href="../styles/agv-task.css">
 </head>
 <body>
     <div class="page-container">
         <div class="page-header">
-            <h1>任务列表</h1>
+            <h1>AGV任务管理</h1>
         </div>
 
         <!-- 查询筛选区 -->
@@ -28,25 +28,26 @@
                     <label>命令类型：</label>
                     <select class="filter-select" id="searchCommandType">
                         <option value="">全部</option>
-                        <option value="入库">入库</option>
-                        <option value="出库">出库</option>
+                        <option value="搬运">搬运</option>
+                        <option value="充电">充电</option>
+                        <option value="待机">待机</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>任务类型：</label>
                     <select class="filter-select" id="searchTaskType">
                         <option value="">全部</option>
-                        <option value="普通入库">普通入库</option>
-                        <option value="普通出库">普通出库</option>
-                        <option value="组盘出库">组盘出库</option>
-                        <option value="托盘回库">托盘回库</option>
-                        <option value="盘点出库">盘点出库</option>
-                        <option value="盘点入库">盘点入库</option>
+                        <option value="入库搬运">入库搬运</option>
+                        <option value="出库搬运">出库搬运</option>
+                        <option value="库内搬运">库内搬运</option>
+                        <option value="空载搬运">空载搬运</option>
+                        <option value="充电任务">充电任务</option>
+                        <option value="待机任务">待机任务</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>容器编码：</label>
-                    <input type="text" class="filter-input" id="searchContainer" placeholder="请输入容器编码">
+                    <label>AGV编号：</label>
+                    <input type="text" class="filter-input" id="searchAgvNo" placeholder="请输入AGV编号">
                 </div>
             </div>
             <div class="filter-row">
@@ -92,12 +93,12 @@
                         <th width="140">关联单据号</th>
                         <th width="80">命令类型</th>
                         <th width="120">任务类型</th>
-                        <th width="100">容器编码</th>
-                        <th width="180">物料信息</th>
-                        <th width="100">取货库位</th>
-                        <th width="100">放货库位</th>
-                        <th width="100">取货库口</th>
-                        <th width="100">放货库口</th>
+                        <th width="100">AGV编号</th>
+                        <th width="180">任务描述</th>
+                        <th width="100">起始位置</th>
+                        <th width="100">目标位置</th>
+                        <th width="100">当前位置</th>
+                        <th width="80">电量(%)</th>
                         <th width="80">状态</th>
                         <th width="150">创建时间</th>
                         <th width="150">开始时间</th>
@@ -106,7 +107,7 @@
                         <th width="200">操作</th>
                     </tr>
                 </thead>
-                <tbody id="taskTableBody">
+                <tbody id="agvTaskTableBody">
                     <!-- 数据将通过JavaScript动态生成 -->
                 </tbody>
             </table>
@@ -129,15 +130,16 @@
             </div>
             <div class="modal-body">
                 <div class="warning-message">
-                    ⚠️ 强制完成后，系统将自动更新库存，默认该任务已按照任务内容执行。
+                    ⚠️ 强制完成后，系统将自动更新任务状态，默认该任务已按照任务内容执行。
                 </div>
                 <div class="form-row">
                     <div class="form-group full-width">
                         <label class="required">强制完成原因：</label>
                         <select class="form-input" id="forceReason" required>
                             <option value="">请选择原因</option>
-                            <option value="设备故障已处理">设备故障已处理</option>
-                            <option value="物料已人工搬运">物料已人工搬运</option>
+                            <option value="AGV故障已处理">AGV故障已处理</option>
+                            <option value="路径阻塞已清除">路径阻塞已清除</option>
+                            <option value="任务已人工完成">任务已人工完成</option>
                             <option value="其他">其他</option>
                         </select>
                     </div>
@@ -150,6 +152,6 @@
         </div>
     </div>
 
-    <script src="../scripts/task-list.js"></script>
+    <script src="../scripts/agv-task.js"></script>
 </body>
 </html>

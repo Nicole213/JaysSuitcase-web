@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发货单</title>
+    <link rel="stylesheet" href="../styles/pages.css">
+    <link rel="stylesheet" href="../styles/shipment.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <h1>发货单</h1>
+        </div>
+
+        <!-- 查询筛选区 -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>发货单号：</label>
+                    <input type="text" class="filter-input" id="searchShipmentNo" placeholder="请输入发货单号">
+                </div>
+                <div class="filter-group">
+                    <label>上游单号：</label>
+                    <input type="text" class="filter-input" id="searchUpstreamNo" placeholder="请输入上游单号">
+                </div>
+                <div class="filter-group">
+                    <label>物料编码：</label>
+                    <input type="text" class="filter-input" id="searchMaterialCode" placeholder="请输入物料编码">
+                </div>
+                <div class="filter-group">
+                    <label>状态：</label>
+                    <select class="filter-select" id="searchStatus">
+                        <option value="">全部</option>
+                        <option value="待发货">待发货</option>
+                        <option value="发货中">发货中</option>
+                        <option value="已完成">已完成</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>来源：</label>
+                    <select class="filter-select" id="searchSource">
+                        <option value="">全部</option>
+                        <option value="客户WMS同步">客户WMS同步</option>
+                        <option value="手工创建">手工创建</option>
+                    </select>
+                </div>
+                <div class="filter-group date-range-group">
+                    <label>创建时间：</label>
+                    <div class="date-range-input">
+                        <input type="date" class="filter-input-date" id="searchStartDate">
+                        <span class="date-separator">至</span>
+                        <input type="date" class="filter-input-date" id="searchEndDate">
+                    </div>
+                </div>
+                <button class="search-btn" id="searchBtn">🔍 查询</button>
+                <button class="reset-btn" id="resetBtn">🔄 重置</button>
+            </div>
+        </div>
+
+        <!-- 操作按钮区 -->
+        <div class="action-bar">
+            <button class="primary-btn" id="addBtn">➕ 新增发货单</button>
+        </div>
+
+        <!-- 表格区 -->
+        <div class="table-section">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th width="140">发货单号</th>
+                        <th width="120">来源</th>
+                        <th width="140">发货月台</th>
+                        <th width="120">物料编码</th>
+                        <th width="150">物料名称</th>
+                        <th width="150">客户名称</th>
+                        <th width="200">收货地址</th>
+                        <th width="80">计划数量</th>
+                        <th width="80">已发货数量</th>
+                        <th width="80">状态</th>
+                        <th width="150">创建时间</th>
+                        <th width="280">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="shipmentTableBody">
+                    <!-- 数据将通过JavaScript动态生成 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination">
+            <button class="page-btn" id="prevPage">上一页</button>
+            <span class="page-info">第 <span id="currentPage">1</span> 页，共 <span id="totalPages">1</span> 页</span>
+            <button class="page-btn" id="nextPage">下一页</button>
+        </div>
+    </div>
+
+    <!-- 新增/编辑发货单弹窗 -->
+    <div class="modal" id="shipmentModal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3 id="modalTitle">新增发货单</h3>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="shipmentForm">
+                    <div class="section-title">基础信息</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="required">发货单号：</label>
+                            <input type="text" class="form-input" id="shipmentNo" readonly placeholder="系统自动生成">
+                        </div>
+                        <div class="form-group">
+                            <label class="required">发货月台：</label>
+                            <select class="form-input" id="shipmentPlatform" required>
+                                <option value="">请选择</option>
+                                <option value="1号月台">1号月台</option>
+                                <option value="2号月台">2号月台</option>
+                                <option value="3号月台">3号月台</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>上游单号：</label>
+                            <input type="text" class="form-input" id="upstreamNo" placeholder="请输入上游单号">
+                        </div>
+                        <div class="form-group">
+                            <label class="required">客户名称：</label>
+                            <input type="text" class="form-input" id="customerName" required placeholder="请输入客户名称">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="required">收货地址：</label>
+                            <input type="text" class="form-input" id="deliveryAddress" required placeholder="请输入收货地址">
+                        </div>
+                        <div class="form-group">
+                            <label>备注：</label>
+                            <input type="text" class="form-input" id="shipmentRemark" placeholder="请输入备注">
+                        </div>
+                    </div>
+                    
+                    <div class="section-title">
+                        物料明细
+                        <button type="button" class="add-material-btn" id="addMaterialBtn">+ 添加物料</button>
+                    </div>
+                    <div class="material-list" id="materialList">
+                        <!-- 物料明细将动态生成 -->
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn primary" id="saveBtn">保存</button>
+                <button class="modal-btn secondary" id="cancelBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详情弹窗 -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content extra-large">
+            <div class="modal-header">
+                <h3>发货单详情</h3>
+                <span class="modal-close" id="detailClose">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="section-title">基本信息</div>
+                <div class="detail-info">
+                    <div class="info-item">
+                        <label>发货单号：</label>
+                        <span id="detailShipmentNo">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>来源：</label>
+                        <span id="detailSource">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>发货月台：</label>
+                        <span id="detailPlatform">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>状态：</label>
+                        <span id="detailStatus">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>客户名称：</label>
+                        <span id="detailCustomer">-</span>
+                    </div>
+                    <div class="info-item">
+                        <label>收货地址：</label>
+                        <span id="detailAddress">-</span>
+                    </div>
+                </div>
+                
+                <div class="section-title">物料信息</div>
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>物料编码</th>
+                            <th>物料名称</th>
+                            <th>计划数量</th>
+                            <th>已发货数量</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailMaterialBody">
+                    </tbody>
+                </table>
+                
+                <div class="section-title">出库任务</div>
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th width="140">任务号</th>
+                            <th width="140">关联单据号</th>
+                            <th width="80">命令类型</th>
+                            <th width="120">任务类型</th>
+                            <th width="100">容器编码</th>
+                            <th width="180">物料信息</th>
+                            <th width="100">取货库位</th>
+                            <th width="100">放货库位</th>
+                            <th width="100">取货库口</th>
+                            <th width="100">放货库口</th>
+                            <th width="80">状态</th>
+                            <th width="150">创建时间</th>
+                            <th width="150">开始时间</th>
+                            <th width="150">完成时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailTaskBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="detailCloseBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/shipment.js"></script>
+</body>
+</html>

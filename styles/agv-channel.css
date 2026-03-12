@@ -1,4 +1,4 @@
-/* 堆垛机任务管理页面样式 - 参考入库单页面风格 */
+/* AGV平库通道管理页面样式 - 继承系统统一样式 */
 
 .page-header h1 {
     font-size: 24px;
@@ -20,11 +20,6 @@
     align-items: center;
     gap: 16px;
     flex-wrap: wrap;
-    margin-bottom: 12px;
-}
-
-.filter-row:last-child {
-    margin-bottom: 0;
 }
 
 .filter-group {
@@ -45,27 +40,11 @@
     border-radius: 4px;
     font-size: 14px;
     outline: none;
-    width: 180px;
+    width: 200px;
 }
 
-.filter-input-date {
-    padding: 8px 12px;
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
-    font-size: 14px;
-    outline: none;
-    width: 140px;
-}
-
-.filter-input:focus,
-.filter-input-date:focus {
+.filter-input:focus {
     border-color: #667eea;
-}
-
-.date-separator {
-    font-size: 14px;
-    color: #999;
-    margin: 0 4px;
 }
 
 .filter-select {
@@ -74,7 +53,7 @@
     border-radius: 4px;
     font-size: 14px;
     outline: none;
-    min-width: 130px;
+    min-width: 150px;
 }
 
 .filter-select:focus {
@@ -110,26 +89,24 @@
 
 /* 操作按钮区 */
 .action-bar {
-    display: flex;
-    gap: 12px;
     margin-bottom: 16px;
 }
 
-.export-btn {
+.primary-btn {
     padding: 10px 24px;
-    background: #52c41a;
+    background: #667eea;
     color: white;
     border: none;
     border-radius: 4px;
-    cursor: pointer;
     font-size: 14px;
+    cursor: pointer;
     transition: all 0.3s;
 }
 
-.export-btn:hover {
-    background: #73d13d;
+.primary-btn:hover {
+    background: #5568d3;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(82, 196, 26, 0.4);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 /* 表格区域 */
@@ -145,7 +122,7 @@
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 2200px;
+    min-width: 1100px;
 }
 
 .data-table thead {
@@ -181,73 +158,14 @@
     font-weight: 500;
 }
 
-.status-badge.pending {
-    background: #fff7e6;
-    color: #fa8c16;
-}
-
-.status-badge.processing {
-    background: #e6f7ff;
-    color: #1890ff;
-}
-
-.status-badge.completed {
+.status-badge.enabled {
     background: #e8f5e9;
     color: #52c41a;
 }
 
-.status-badge.error {
-    background: #fff1f0;
-    color: #ff4d4f;
-}
-
-.status-badge.cancelled {
+.status-badge.disabled {
     background: #f5f5f5;
     color: #999;
-}
-
-/* 命令类型标签 */
-.command-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.command-badge.inbound {
-    background: #e6f7ff;
-    color: #1890ff;
-}
-
-.command-badge.outbound {
-    background: #fff7e6;
-    color: #fa8c16;
-}
-
-/* 任务类型标签 */
-.task-type-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
-    background: #f0f4ff;
-    color: #667eea;
-}
-
-/* 物料信息 */
-.material-info {
-    font-size: 13px;
-    color: #666;
-    line-height: 1.6;
-}
-
-/* 异常原因 */
-.error-reason {
-    font-size: 13px;
-    color: #ff4d4f;
-    font-weight: 500;
 }
 
 /* 操作按钮 */
@@ -257,7 +175,7 @@
     flex-wrap: wrap;
 }
 
-.urgent-btn, .force-btn, .cancel-btn {
+.edit-btn, .delete-btn, .enable-btn, .disable-btn {
     padding: 0;
     border: none;
     background: none;
@@ -268,38 +186,17 @@
     text-decoration: none;
 }
 
-.urgent-btn:hover, .force-btn:hover, .cancel-btn:hover {
+.edit-btn:hover, .delete-btn:hover, .enable-btn:hover, .disable-btn:hover {
     color: #40a9ff;
     text-decoration: underline;
 }
 
-.urgent-btn {
-    color: #fa8c16;
+.delete-btn {
+    color: #ff4d4f;
 }
 
-.urgent-btn:hover {
-    color: #ffa940;
-}
-
-.cancel-btn {
-    color: #999;
-}
-
-.cancel-btn:hover {
-    color: #666;
-}
-
-/* 置顶标识 */
-.urgent-flag {
-    display: inline-block;
-    padding: 2px 8px;
-    background: #ff4d4f;
-    color: white;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    margin-left: 8px;
-    vertical-align: middle;
+.delete-btn:hover {
+    color: #ff7875;
 }
 
 /* 分页 */
@@ -321,7 +218,7 @@
     transition: all 0.3s;
 }
 
-.page-btn:hover:not(:disabled) {
+.page-btn:hover {
     border-color: #667eea;
     color: #667eea;
 }
@@ -443,15 +340,15 @@
     border-color: #667eea;
 }
 
-/* 警告消息 */
-.warning-message {
-    padding: 12px 16px;
-    background: #fff7e6;
-    border-left: 4px solid #fa8c16;
-    border-radius: 4px;
-    color: #fa8c16;
-    font-size: 14px;
-    margin-bottom: 16px;
+.form-input:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+}
+
+textarea.form-input {
+    resize: vertical;
+    font-family: inherit;
 }
 
 .modal-footer {
@@ -491,4 +388,135 @@
 
 .modal-btn.secondary:hover {
     background: #e8e8e8;
+}
+
+/* 空数据状态 */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.empty-state .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state .empty-text {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.empty-state .empty-desc {
+    font-size: 14px;
+    color: #ccc;
+}
+
+/* 确认对话框样式 */
+.confirm-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1001;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirm-dialog.active {
+    display: flex;
+}
+
+.confirm-content {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.confirm-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+}
+
+.confirm-message {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.confirm-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.confirm-btn.primary {
+    background: #ff4d4f;
+    color: white;
+}
+
+.confirm-btn.primary:hover {
+    background: #ff7875;
+}
+
+.confirm-btn.secondary {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.confirm-btn.secondary:hover {
+    background: #e8e8e8;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+    }
+    
+    .filter-input {
+        width: 100%;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .action-btns {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .pagination {
+        flex-direction: column;
+        gap: 12px;
+    }
 }

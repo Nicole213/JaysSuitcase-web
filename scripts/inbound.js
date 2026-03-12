@@ -7,7 +7,7 @@ let inboundOrdersData = [
         orderNo: 'RK-2024-0001',
         source: '客户WMS同步',
         upstreamNo: 'WMS-IN-20240115-001',
-        type: '生产入库',
+        type: '成品入库',
         materials: [
             { code: 'WL-2024-001', name: '电子元件A型', plannedQty: 100, inboundQty: 100, portAisle: '1号巷道' }
         ],
@@ -21,7 +21,7 @@ let inboundOrdersData = [
         orderNo: 'RK-2024-0002',
         source: '手工创建',
         upstreamNo: '',
-        type: '采购入库',
+        type: '模具入库',
         materials: [
             { code: 'WL-2024-002', name: '机械零件B型', plannedQty: 50, inboundQty: 30, portAisle: '1号巷道' }
         ],
@@ -35,7 +35,7 @@ let inboundOrdersData = [
         orderNo: 'RK-2024-0003',
         source: '手工创建',
         upstreamNo: 'PO-2024-003',
-        type: '退料入库',
+        type: '辅材入库',
         materials: [
             { code: 'WL-2024-001', name: '电子元件A型', plannedQty: 80, inboundQty: 0, portAisle: '1号巷道' },
             { code: 'WL-2024-003', name: '塑料配件C型', plannedQty: 60, inboundQty: 0, portAisle: '1号巷道' },
@@ -51,7 +51,7 @@ let inboundOrdersData = [
         orderNo: 'RK-2024-0004',
         source: '客户WMS同步',
         upstreamNo: 'WMS-IN-20240118-002',
-        type: '生产入库',
+        type: '成品入库',
         materials: [
             { code: 'WL-2024-004', name: '长物料钢材D型', plannedQty: 120, inboundQty: 60, portAisle: '2号巷道' }
         ],

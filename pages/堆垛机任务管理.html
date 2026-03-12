@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>堆垛机任务管理</title>
+    <link rel="stylesheet" href="../styles/pages.css">
+    <link rel="stylesheet" href="../styles/task-list.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <h1>堆垛机任务管理</h1>
+        </div>
+
+        <!-- 查询筛选区 -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>任务号：</label>
+                    <input type="text" class="filter-input" id="searchTaskNo" placeholder="请输入任务号">
+                </div>
+                <div class="filter-group">
+                    <label>关联单据号：</label>
+                    <input type="text" class="filter-input" id="searchOrderNo" placeholder="入库单/出库单/盘点计划号">
+                </div>
+                <div class="filter-group">
+                    <label>命令类型：</label>
+                    <select class="filter-select" id="searchCommandType">
+                        <option value="">全部</option>
+                        <option value="入库">入库</option>
+                        <option value="出库">出库</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>任务类型：</label>
+                    <select class="filter-select" id="searchTaskType">
+                        <option value="">全部</option>
+                        <option value="普通入库">普通入库</option>
+                        <option value="普通出库">普通出库</option>
+                        <option value="组盘出库">组盘出库</option>
+                        <option value="托盘回库">托盘回库</option>
+                        <option value="盘点出库">盘点出库</option>
+                        <option value="盘点入库">盘点入库</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>容器编码：</label>
+                    <input type="text" class="filter-input" id="searchContainer" placeholder="请输入容器编码">
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>状态：</label>
+                    <select class="filter-select" id="searchStatus">
+                        <option value="">全部</option>
+                        <option value="待执行">待执行</option>
+                        <option value="执行中">执行中</option>
+                        <option value="已完成">已完成</option>
+                        <option value="异常">异常</option>
+                        <option value="已取消">已取消</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>创建时间：</label>
+                    <input type="date" class="filter-input-date" id="searchCreateStartDate" placeholder="开始日期">
+                    <span class="date-separator">至</span>
+                    <input type="date" class="filter-input-date" id="searchCreateEndDate" placeholder="结束日期">
+                </div>
+                <div class="filter-group">
+                    <label>完成时间：</label>
+                    <input type="date" class="filter-input-date" id="searchCompleteStartDate" placeholder="开始日期">
+                    <span class="date-separator">至</span>
+                    <input type="date" class="filter-input-date" id="searchCompleteEndDate" placeholder="结束日期">
+                </div>
+                <button class="search-btn" id="searchBtn">🔍 查询</button>
+                <button class="reset-btn" id="resetBtn">🔄 重置</button>
+            </div>
+        </div>
+
+        <!-- 操作按钮区 -->
+        <div class="action-bar">
+            <button class="export-btn" id="exportBtn">📥 导出</button>
+        </div>
+
+        <!-- 表格区 -->
+        <div class="table-section">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th width="140">任务号</th>
+                        <th width="140">关联单据号</th>
+                        <th width="80">命令类型</th>
+                        <th width="120">任务类型</th>
+                        <th width="100">容器编码</th>
+                        <th width="180">物料信息</th>
+                        <th width="100">取货库位</th>
+                        <th width="100">放货库位</th>
+                        <th width="100">取货库口</th>
+                        <th width="100">放货库口</th>
+                        <th width="80">状态</th>
+                        <th width="150">创建时间</th>
+                        <th width="150">开始时间</th>
+                        <th width="150">完成时间</th>
+                        <th width="180">异常原因</th>
+                        <th width="200">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="taskTableBody">
+                    <!-- 数据将通过JavaScript动态生成 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination">
+            <button class="page-btn" id="prevPage">上一页</button>
+            <span class="page-info">第 <span id="currentPage">1</span> 页，共 <span id="totalPages">1</span> 页</span>
+            <button class="page-btn" id="nextPage">下一页</button>
+        </div>
+    </div>
+
+    <!-- 强制完成弹窗 -->
+    <div class="modal" id="forceCompleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>强制完成任务</h3>
+                <span class="modal-close" id="forceClose">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="warning-message">
+                    ⚠️ 强制完成后，系统将自动更新库存，默认该任务已按照任务内容执行。
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label class="required">强制完成原因：</label>
+                        <select class="form-input" id="forceReason" required>
+                            <option value="">请选择原因</option>
+                            <option value="设备故障已处理">设备故障已处理</option>
+                            <option value="物料已人工搬运">物料已人工搬运</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn primary" id="forceSaveBtn">确认完成</button>
+                <button class="modal-btn secondary" id="forceCancelBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/task-list.js"></script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGV平库库位功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background-color: #fafafa;
+        }
+        .feature-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-list li::before {
+            content: "✓";
+            color: #52c41a;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .test-link {
+            display: inline-block;
+            background-color: #667eea;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+        }
+        .test-link:hover {
+            background-color: #5568d3;
+        }
+        .note {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .status-demo {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin: 2px;
+        }
+        .status-empty { background: #f0f0f0; color: #999; }
+        .status-occupied { background: #e8f5e9; color: #52c41a; }
+        .status-allocated { background: #e6f7ff; color: #1890ff; }
+        .status-empty-tray { background: #fff7e6; color: #fa8c16; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AGV平库库位管理功能测试</h1>
+        
+        <div class="test-section">
+            <h2>功能概述</h2>
+            <p>AGV平库库位管理是仓库管理系统中的核心功能模块，用于管理AGV自动化平库的库位状态、容器信息和站点配置。</p>
+        </div>
+
+        <div class="test-section">
+            <h2>主要功能特性</h2>
+            <ul class="feature-list">
+                <li>库位编码和基本信息管理</li>
+                <li>所属库区和通道关联</li>
+                <li>当前状态实时跟踪</li>
+                <li>锁定状态控制</li>
+                <li>启用/禁用状态管理</li>
+                <li>容器号关联管理</li>
+                <li>AGV站点配置</li>
+                <li>站点类型分类</li>
+                <li>多条件查询检索</li>
+                <li>完整的CRUD操作</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>列表展示字段</h2>
+            <ul class="feature-list">
+                <li>库位编码 - 唯一标识符</li>
+                <li>所属库区 - 关联的库区信息</li>
+                <li>通道 - 关联的通道信息</li>
+                <li>当前状态 - 空库位/有货/已分配/空托</li>
+                <li>锁定状态 - 锁定/正常</li>
+                <li>启用状态 - 启用/禁用</li>
+                <li>当前容器号 - 如有货时显示</li>
+                <li>是否AGV站点 - 是/否</li>
+                <li>站点类型 - 入库/出库/缓存/检测站点</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>状态标签展示</h2>
+            <p>系统使用不同颜色的标签来直观显示各种状态：</p>
+            <div style="margin: 15px 0;">
+                <strong>当前状态：</strong>
+                <span class="status-demo status-empty">空库位</span>
+                <span class="status-demo status-occupied">有货</span>
+                <span class="status-demo status-allocated">已分配</span>
+                <span class="status-demo status-empty-tray">空托</span>
+            </div>
+            <div style="margin: 15px 0;">
+                <strong>锁定状态：</strong>
+                <span class="status-demo" style="background: #fff1f0; color: #ff4d4f;">锁定</span>
+                <span class="status-demo" style="background: #f6ffed; color: #52c41a;">正常</span>
+            </div>
+            <div style="margin: 15px 0;">
+                <strong>启用状态：</strong>
+                <span class="status-demo" style="background: #e8f5e9; color: #52c41a;">启用</span>
+                <span class="status-demo" style="background: #f5f5f5; color: #999;">禁用</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>查询功能</h2>
+            <ul class="feature-list">
+                <li>按库位编码模糊查询</li>
+                <li>按所属库区精确筛选</li>
+                <li>按通道精确筛选</li>
+                <li>按当前状态筛选</li>
+                <li>按锁定状态筛选</li>
+                <li>支持组合查询条件</li>
+                <li>查询结果实时过滤</li>
+                <li>重置查询条件</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>操作功能</h2>
+            <ul class="feature-list">
+                <li>新增库位 - 完整信息录入</li>
+                <li>编辑库位 - 修改库位信息</li>
+                <li>删除库位 - 需要确认操作</li>
+                <li>启用/禁用 - 控制库位可用性</li>
+                <li>锁定/解锁 - 控制库位锁定状态</li>
+                <li>表单数据验证</li>
+                <li>操作结果反馈</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>业务逻辑验证</h2>
+            <ul class="feature-list">
+                <li>有货状态必须填写容器号</li>
+                <li>AGV站点必须选择站点类型</li>
+                <li>非AGV站点不能选择站点类型</li>
+                <li>库位编码唯一性验证</li>
+                <li>必填字段验证</li>
+                <li>状态联动控制</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>测试数据</h2>
+            <p>系统预置了8条测试数据，涵盖不同状态和配置：</p>
+            <ul class="feature-list">
+                <li>LOC001-01-01 - 有货状态，入库站点，正常锁定</li>
+                <li>LOC001-01-02 - 空库位状态，非AGV站点</li>
+                <li>LOC001-02-01 - 已分配状态，出库站点，锁定状态</li>
+                <li>LOC002-01-01 - 空托状态，缓存站点，禁用状态</li>
+                <li>LOC002-01-02 - 有货状态，非AGV站点，正常状态</li>
+                <li>LOC003-01-01 - 空库位状态，检测站点</li>
+                <li>LOC003-02-01 - 有货状态，锁定状态</li>
+                <li>LOC001-01-03 - 空托状态，入库站点</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>站点类型说明</h2>
+            <ul class="feature-list">
+                <li>入库站点 - 用于货物入库操作</li>
+                <li>出库站点 - 用于货物出库操作</li>
+                <li>缓存站点 - 用于临时存储缓存</li>
+                <li>检测站点 - 用于货物质量检测</li>
+            </ul>
+        </div>
+
+        <a href="pages/AGV平库库位.html" class="test-link" target="_blank">
+            🚀 打开AGV平库库位管理页面
+        </a>
+
+        <div class="note success">
+            <strong>测试说明：</strong>
+            <br>1. 点击上方链接打开AGV平库库位管理页面
+            <br>2. 测试各项功能：查询、新增、编辑、删除、状态切换
+            <br>3. 验证业务逻辑：有货状态容器号验证、AGV站点类型验证
+            <br>4. 测试锁定/解锁功能
+            <br>5. 检查状态标签的可视化效果
+        </div>
+
+        <div class="note">
+            <strong>注意事项：</strong>
+            <br>• 当前使用模拟数据，实际项目中需要对接后端API
+            <br>• 有货状态必须填写容器号，否则无法保存
+            <br>• AGV站点必须选择站点类型
+            <br>• 库位编码必须唯一
+            <br>• 页面刷新后数据会重置为初始状态
+        </div>
+    </div>
+</body>
+</html>

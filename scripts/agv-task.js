@@ -1,85 +1,76 @@
-// 堆垛机任务管理页面脚本
+// AGV任务管理页面脚本
 
-// 模拟任务数据
-let taskData = [
+// 模拟AGV任务数据
+let agvTaskData = [
     {
         id: 1,
-        taskNo: 'TASK-RK-2024-0001-001',
+        taskNo: 'AGV-TASK-RK-2024-0001-001',
         orderNo: 'RK-2024-0001',
-        commandType: '入库',
-        taskType: '普通入库',
-        containerCode: 'TP-001',
-        materials: [
-            { name: '电子元件A型', qty: 30 }
-        ],
-        pickLocation: '-',
-        putLocation: '1-5-12-1',
-        pickPort: '1号入库口',
-        putPort: '-',
+        commandType: '搬运',
+        taskType: '入库搬运',
+        agvNo: 'AGV-001',
+        description: '搬运容器TP-001至入库口1',
+        startLocation: '充电桩1',
+        targetLocation: '入库口1',
+        currentLocation: '入库口1',
+        batteryLevel: 85,
         status: '已完成',
         createTime: '2024-01-17 15:20:00',
-        startTime: '2024-01-17 15:25:00',
-        completeTime: '2024-01-17 15:30:25',
+        startTime: '2024-01-17 15:22:00',
+        completeTime: '2024-01-17 15:28:00',
         errorReason: '',
         isUrgent: false
     },
     {
         id: 2,
-        taskNo: 'TASK-RK-2024-0002-001',
+        taskNo: 'AGV-TASK-RK-2024-0002-001',
         orderNo: 'RK-2024-0002',
-        commandType: '入库',
-        taskType: '普通入库',
-        containerCode: 'TP-002',
-        materials: [
-            { name: '机械零件B型', qty: 20 }
-        ],
-        pickLocation: '-',
-        putLocation: '1-6-12-1',
-        pickPort: '1号入库口',
-        putPort: '-',
+        commandType: '搬运',
+        taskType: '入库搬运',
+        agvNo: 'AGV-002',
+        description: '搬运容器TP-002至入库口2',
+        startLocation: '待机区A',
+        targetLocation: '入库口2',
+        currentLocation: '通道3',
+        batteryLevel: 72,
         status: '执行中',
         createTime: '2024-01-17 16:00:00',
-        startTime: '2024-01-17 16:05:00',
+        startTime: '2024-01-17 16:02:00',
         completeTime: '-',
         errorReason: '',
         isUrgent: false
     },
     {
         id: 3,
-        taskNo: 'TASK-CK-2024-0001-001',
+        taskNo: 'AGV-TASK-CK-2024-0001-001',
         orderNo: 'CK-2024-0001',
-        commandType: '出库',
-        taskType: '普通出库',
-        containerCode: 'TP-001',
-        materials: [
-            { name: '电子元件A型', qty: 30 }
-        ],
-        pickLocation: '1-5-12-1',
-        putLocation: '-',
-        pickPort: '-',
-        putPort: '1号出库口',
+        commandType: '搬运',
+        taskType: '出库搬运',
+        agvNo: 'AGV-001',
+        description: '搬运容器TP-001至出库口1',
+        startLocation: '库位1-5-12-1',
+        targetLocation: '出库口1',
+        currentLocation: '出库口1',
+        batteryLevel: 78,
         status: '已完成',
         createTime: '2024-01-18 09:00:00',
-        startTime: '2024-01-18 09:05:00',
-        completeTime: '2024-01-18 09:10:30',
+        startTime: '2024-01-18 09:02:00',
+        completeTime: '2024-01-18 09:08:00',
         errorReason: '',
         isUrgent: false
     },
     {
         id: 4,
-        taskNo: 'TASK-CK-2024-0002-001',
+        taskNo: 'AGV-TASK-CK-2024-0002-001',
         orderNo: 'CK-2024-0002',
-        commandType: '出库',
-        taskType: '组盘出库',
-        containerCode: 'TP-003',
-        materials: [
-            { name: '塑料配件C型', qty: 50 },
-            { name: '金属材料E型', qty: 20 }
-        ],
-        pickLocation: '1-3-8-1',
-        putLocation: '-',
-        pickPort: '-',
-        putPort: '2号出库口',
+        commandType: '搬运',
+        taskType: '出库搬运',
+        agvNo: 'AGV-003',
+        description: '搬运容器TP-003至出库口2',
+        startLocation: '库位1-3-8-1',
+        targetLocation: '出库口2',
+        currentLocation: '库位1-3-8-1',
+        batteryLevel: 65,
         status: '待执行',
         createTime: '2024-01-18 10:30:00',
         startTime: '-',
@@ -89,79 +80,73 @@ let taskData = [
     },
     {
         id: 5,
-        taskNo: 'TASK-PD-2024-001-001',
-        orderNo: 'PD-2024-001',
-        commandType: '出库',
-        taskType: '盘点出库',
-        containerCode: 'TP-005',
-        materials: [
-            { name: '长物料钢材D型', qty: 15 }
-        ],
-        pickLocation: '2-5-10-1',
-        putLocation: '-',
-        pickPort: '-',
-        putPort: '盘点口1',
+        taskNo: 'AGV-TASK-MOVE-001',
+        orderNo: '-',
+        commandType: '搬运',
+        taskType: '库内搬运',
+        agvNo: 'AGV-002',
+        description: '搬运空托盘至待机区',
+        startLocation: '出库口1',
+        targetLocation: '待机区B',
+        currentLocation: '出库口1',
+        batteryLevel: 45,
         status: '已完成',
         createTime: '2024-01-19 14:00:00',
-        startTime: '2024-01-19 14:05:00',
-        completeTime: '2024-01-19 14:15:00',
+        startTime: '2024-01-19 14:02:00',
+        completeTime: '2024-01-19 14:06:00',
         errorReason: '',
         isUrgent: false
     },
     {
         id: 6,
-        taskNo: 'TASK-PD-2024-001-002',
-        orderNo: 'PD-2024-001',
-        commandType: '入库',
-        taskType: '盘点入库',
-        containerCode: 'TP-005',
-        materials: [
-            { name: '长物料钢材D型', qty: 15 }
-        ],
-        pickLocation: '-',
-        putLocation: '2-5-10-1',
-        pickPort: '盘点口1',
-        putPort: '-',
+        taskNo: 'AGV-TASK-CHARGE-001',
+        orderNo: '-',
+        commandType: '充电',
+        taskType: '充电任务',
+        agvNo: 'AGV-002',
+        description: 'AGV-002充电任务',
+        startLocation: '待机区B',
+        targetLocation: '充电桩2',
+        currentLocation: '充电桩2',
+        batteryLevel: 95,
         status: '已完成',
         createTime: '2024-01-19 15:00:00',
-        startTime: '2024-01-19 15:05:00',
-        completeTime: '2024-01-19 15:10:00',
+        startTime: '2024-01-19 15:02:00',
+        completeTime: '2024-01-19 16:30:00',
         errorReason: '',
         isUrgent: false
     },
     {
         id: 7,
-        taskNo: 'TASK-HK-2024-001',
-        orderNo: '-',
-        commandType: '入库',
-        taskType: '托盘回库',
-        containerCode: 'TP-010',
-        materials: [],
-        pickLocation: '-',
-        putLocation: '3-2-7-1',
-        pickPort: '2号出库口',
-        putPort: '-',
+        taskNo: 'AGV-TASK-ERROR-001',
+        orderNo: 'CK-2024-0003',
+        commandType: '搬运',
+        taskType: '出库搬运',
+        agvNo: 'AGV-004',
+        description: '搬运容器TP-006至出库口1',
+        startLocation: '库位3-2-7-1',
+        targetLocation: '出库口1',
+        currentLocation: '通道5',
+        batteryLevel: 55,
         status: '异常',
         createTime: '2024-01-20 11:00:00',
-        startTime: '2024-01-20 11:05:00',
+        startTime: '2024-01-20 11:02:00',
         completeTime: '-',
-        errorReason: '满入',
+        errorReason: '路径阻塞',
         isUrgent: false
     },
     {
         id: 8,
-        taskNo: 'TASK-CK-2024-0003-001',
-        orderNo: 'CK-2024-0003',
-        commandType: '出库',
-        taskType: '普通出库',
-        containerCode: 'TP-006',
-        materials: [
-            { name: '金属材料E型', qty: 35 }
-        ],
-        pickLocation: '3-2-7-1',
-        putLocation: '-',
-        pickPort: '-',
-        putPort: '1号出库口',
+        taskNo: 'AGV-TASK-CK-2024-0004-001',
+        orderNo: 'CK-2024-0004',
+        commandType: '搬运',
+        taskType: '出库搬运',
+        agvNo: 'AGV-001',
+        description: '搬运容器TP-007至出库口1',
+        startLocation: '库位1-8-12-2',
+        targetLocation: '出库口1',
+        currentLocation: '待机区A',
+        batteryLevel: 88,
         status: '待执行',
         createTime: '2024-01-20 13:30:00',
         startTime: '-',
@@ -171,37 +156,35 @@ let taskData = [
     },
     {
         id: 9,
-        taskNo: 'TASK-KTP-2024-001',
+        taskNo: 'AGV-TASK-EMPTY-001',
         orderNo: '-',
-        commandType: '入库',
-        taskType: '空托盘入库',
-        containerCode: 'TP-020',
-        materials: [],
-        pickLocation: '-',
-        putLocation: '1-1-1-1',
-        pickPort: '1号入库口',
-        putPort: '-',
+        commandType: '搬运',
+        taskType: '空载搬运',
+        agvNo: 'AGV-003',
+        description: 'AGV-003空载返回待机区',
+        startLocation: '出库口2',
+        targetLocation: '待机区A',
+        currentLocation: '待机区A',
+        batteryLevel: 62,
         status: '已完成',
         createTime: '2024-01-21 09:00:00',
-        startTime: '2024-01-21 09:05:00',
-        completeTime: '2024-01-21 09:08:00',
+        startTime: '2024-01-21 09:01:00',
+        completeTime: '2024-01-21 09:04:00',
         errorReason: '',
         isUrgent: false
     },
     {
         id: 10,
-        taskNo: 'TASK-CK-2024-0004-001',
-        orderNo: 'CK-2024-0004',
-        commandType: '出库',
-        taskType: '普通出库',
-        containerCode: 'TP-007',
-        materials: [
-            { name: '电子元件A型', qty: 25 }
-        ],
-        pickLocation: '1-8-12-2',
-        putLocation: '-',
-        pickPort: '-',
-        putPort: '1号出库口',
+        taskNo: 'AGV-TASK-STANDBY-001',
+        orderNo: '-',
+        commandType: '待机',
+        taskType: '待机任务',
+        agvNo: 'AGV-004',
+        description: 'AGV-004待机任务',
+        startLocation: '通道5',
+        targetLocation: '待机区C',
+        currentLocation: '待机区C',
+        batteryLevel: 30,
         status: '已取消',
         createTime: '2024-01-21 10:00:00',
         startTime: '-',
@@ -214,7 +197,7 @@ let taskData = [
 // 分页配置
 let currentPage = 1;
 const pageSize = 10;
-let filteredData = [...taskData];
+let filteredData = [...agvTaskData];
 let forceCompleteTaskId = null;
 
 // 初始化
@@ -225,23 +208,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 渲染表格
 function renderTable() {
-    const tbody = document.getElementById('taskTableBody');
+    const tbody = document.getElementById('agvTaskTableBody');
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
     const pageData = filteredData.slice(start, end);
 
     tbody.innerHTML = pageData.map(task => {
         const statusClass = getStatusClass(task.status);
-        const commandClass = task.commandType === '入库' ? 'inbound' : 'outbound';
-        
-        // 格式化物料信息
-        let materialInfo = '-';
-        if (task.materials && task.materials.length > 0) {
-            materialInfo = task.materials.map(m => `${m.name}×${m.qty}`).join('、');
-        } else if (task.taskType.includes('空托盘') || task.taskType === '托盘回库') {
-            materialInfo = task.taskType.includes('空托盘') ? '空托盘' : 
-                          (task.materials.length === 0 ? '空托盘' : '非空托盘');
-        }
+        const commandClass = getCommandClass(task.commandType);
+        const batteryClass = getBatteryClass(task.batteryLevel);
         
         // 操作按钮
         let actions = [];
@@ -264,12 +239,12 @@ function renderTable() {
             <td>${task.orderNo}</td>
             <td><span class="command-badge ${commandClass}">${task.commandType}</span></td>
             <td><span class="task-type-badge">${task.taskType}</span></td>
-            <td>${task.containerCode}</td>
-            <td class="material-info">${materialInfo}</td>
-            <td>${task.pickLocation}</td>
-            <td>${task.putLocation}</td>
-            <td>${task.pickPort}</td>
-            <td>${task.putPort}</td>
+            <td>${task.agvNo}</td>
+            <td class="task-description">${task.description}</td>
+            <td>${task.startLocation}</td>
+            <td>${task.targetLocation}</td>
+            <td>${task.currentLocation}</td>
+            <td><span class="battery-level ${batteryClass}">${task.batteryLevel}%</span></td>
             <td><span class="status-badge ${statusClass}">${task.status}</span></td>
             <td>${task.createTime}</td>
             <td>${task.startTime}</td>
@@ -296,6 +271,23 @@ function getStatusClass(status) {
         '已取消': 'cancelled'
     };
     return statusMap[status] || 'pending';
+}
+
+// 获取命令类型样式类
+function getCommandClass(commandType) {
+    const commandMap = {
+        '搬运': 'transport',
+        '充电': 'charge',
+        '待机': 'standby'
+    };
+    return commandMap[commandType] || 'transport';
+}
+
+// 获取电量样式类
+function getBatteryClass(batteryLevel) {
+    if (batteryLevel >= 70) return 'battery-high';
+    if (batteryLevel >= 30) return 'battery-medium';
+    return 'battery-low';
 }
 
 // 更新分页
@@ -353,19 +345,19 @@ function searchTasks() {
     const orderNo = document.getElementById('searchOrderNo').value.trim().toLowerCase();
     const commandType = document.getElementById('searchCommandType').value;
     const taskType = document.getElementById('searchTaskType').value;
-    const container = document.getElementById('searchContainer').value.trim().toLowerCase();
+    const agvNo = document.getElementById('searchAgvNo').value.trim().toLowerCase();
     const status = document.getElementById('searchStatus').value;
     const createStartDate = document.getElementById('searchCreateStartDate').value;
     const createEndDate = document.getElementById('searchCreateEndDate').value;
     const completeStartDate = document.getElementById('searchCompleteStartDate').value;
     const completeEndDate = document.getElementById('searchCompleteEndDate').value;
     
-    filteredData = taskData.filter(task => {
+    filteredData = agvTaskData.filter(task => {
         const matchTaskNo = !taskNo || task.taskNo.toLowerCase().includes(taskNo);
         const matchOrderNo = !orderNo || task.orderNo.toLowerCase().includes(orderNo);
         const matchCommandType = !commandType || task.commandType === commandType;
         const matchTaskType = !taskType || task.taskType === taskType;
-        const matchContainer = !container || task.containerCode.toLowerCase().includes(container);
+        const matchAgvNo = !agvNo || task.agvNo.toLowerCase().includes(agvNo);
         const matchStatus = !status || task.status === status;
         
         // 创建时间筛选
@@ -389,7 +381,7 @@ function searchTasks() {
         }
         
         return matchTaskNo && matchOrderNo && matchCommandType && matchTaskType && 
-               matchContainer && matchStatus && matchCreateDate && matchCompleteDate;
+               matchAgvNo && matchStatus && matchCreateDate && matchCompleteDate;
     });
     
     currentPage = 1;
@@ -402,21 +394,21 @@ function resetSearch() {
     document.getElementById('searchOrderNo').value = '';
     document.getElementById('searchCommandType').value = '';
     document.getElementById('searchTaskType').value = '';
-    document.getElementById('searchContainer').value = '';
+    document.getElementById('searchAgvNo').value = '';
     document.getElementById('searchStatus').value = '';
     document.getElementById('searchCreateStartDate').value = '';
     document.getElementById('searchCreateEndDate').value = '';
     document.getElementById('searchCompleteStartDate').value = '';
     document.getElementById('searchCompleteEndDate').value = '';
     
-    filteredData = [...taskData];
+    filteredData = [...agvTaskData];
     currentPage = 1;
     renderTable();
 }
 
 // 置顶任务
 function urgentTask(id) {
-    const task = taskData.find(t => t.id === id);
+    const task = agvTaskData.find(t => t.id === id);
     if (!task) return;
     
     if (task.status !== '待执行') {
@@ -433,7 +425,7 @@ function urgentTask(id) {
 
 // 取消任务
 function cancelTask(id) {
-    const task = taskData.find(t => t.id === id);
+    const task = agvTaskData.find(t => t.id === id);
     if (!task) return;
     
     if (task.status !== '待执行') {
@@ -451,7 +443,7 @@ function cancelTask(id) {
 
 // 强制完成
 function forceComplete(id) {
-    const task = taskData.find(t => t.id === id);
+    const task = agvTaskData.find(t => t.id === id);
     if (!task) return;
     
     if (task.status !== '执行中' && task.status !== '异常') {
@@ -473,13 +465,13 @@ function saveForceComplete() {
         return;
     }
     
-    const task = taskData.find(t => t.id === forceCompleteTaskId);
+    const task = agvTaskData.find(t => t.id === forceCompleteTaskId);
     if (task) {
         task.status = '已完成';
         task.completeTime = getCurrentTime();
         task.errorReason = `强制完成-${reason}`;
         
-        alert(`任务已强制完成！\n\n系统将自动更新库存，默认该任务已按照任务内容执行。`);
+        alert(`任务已强制完成！\n\n系统将自动更新任务状态，默认该任务已按照任务内容执行。`);
         closeForceModal();
         renderTable();
     }
@@ -512,34 +504,25 @@ function exportData() {
     
     // 构建CSV内容
     const headers = [
-        '任务号', '关联单据号', '命令类型', '任务类型', '容器编码', '物料信息',
-        '取货库位', '放货库位', '取货库口', '放货库口', '状态', 
+        '任务号', '关联单据号', '命令类型', '任务类型', 'AGV编号', '任务描述',
+        '起始位置', '目标位置', '当前位置', '电量(%)', '状态', 
         '创建时间', '开始时间', '完成时间', '异常原因', '是否置顶'
     ];
     
     let csvContent = headers.join(',') + '\n';
     
     filteredData.forEach(task => {
-        // 格式化物料信息
-        let materialInfo = '-';
-        if (task.materials && task.materials.length > 0) {
-            materialInfo = task.materials.map(m => `${m.name}×${m.qty}`).join('、');
-        } else if (task.taskType.includes('空托盘') || task.taskType === '托盘回库') {
-            materialInfo = task.taskType.includes('空托盘') ? '空托盘' : 
-                          (task.materials.length === 0 ? '空托盘' : '非空托盘');
-        }
-        
         const row = [
             task.taskNo,
             task.orderNo,
             task.commandType,
             task.taskType,
-            task.containerCode,
-            materialInfo,
-            task.pickLocation,
-            task.putLocation,
-            task.pickPort,
-            task.putPort,
+            task.agvNo,
+            task.description,
+            task.startLocation,
+            task.targetLocation,
+            task.currentLocation,
+            task.batteryLevel,
             task.status,
             task.createTime,
             task.startTime,
@@ -559,11 +542,11 @@ function exportData() {
     const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
     
     link.setAttribute('href', url);
-    link.setAttribute('download', `堆垛机任务管理_${timestamp}.csv`);
+    link.setAttribute('download', `AGV任务管理_${timestamp}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    alert(`成功导出 ${filteredData.length} 条任务记录！`);
+    alert(`成功导出 ${filteredData.length} 条AGV任务记录！`);
 }

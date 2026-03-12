@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>库存明细功能测试</title>
+    <title>成品明细功能测试</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -121,11 +121,11 @@
 </head>
 <body>
     <div class="test-container">
-        <h1>📦 库存明细功能测试说明</h1>
+        <h1>📦 成品明细功能测试说明</h1>
         
         <div class="feature-list">
             <h2>✨ 功能概述</h2>
-            <p>库存明细页面提供了完整的库存查询、管理和导出功能，支持物料+容器维度的库存展示。</p>
+            <p>成品明细页面提供了完整的库存查询、管理和导出功能，支持物料+容器维度的库存展示。</p>
             <ul>
                 <li>📊 <strong>多维度查询</strong>：支持按物料、容器、库位、状态等多个维度筛选</li>
                 <li>🔒 <strong>库存锁定/解锁</strong>：可对物料进行锁定操作，锁定后不可出库</li>
@@ -344,7 +344,7 @@
                 <div class="expected">
                     <strong>预期结果：</strong>
                     <ul>
-                        <li>文件名格式：库存明细_YYYYMMDD_HHMMSS.csv</li>
+                        <li>文件名格式：成品明细_YYYYMMDD_HHMMSS.csv</li>
                         <li>文件包含所有列的数据</li>
                         <li>中文显示正常（UTF-8 BOM编码）</li>
                         <li>导出的是当前筛选后的数据，不是全部数据</li>
@@ -435,7 +435,7 @@
         <h2>📝 注意事项</h2>
         <div class="note">
             <ul>
-                <li>✅ 库存明细以<strong>物料+容器</strong>维度展示，一个容器有多种物料时会显示多条记录</li>
+                <li>✅ 成品明细以<strong>物料+容器</strong>维度展示，一个容器有多种物料时会显示多条记录</li>
                 <li>✅ 物料锁定/解锁操作是针对<strong>单条记录</strong>的，不影响同一容器中的其他物料</li>
                 <li>✅ 清空库存操作<strong>不可恢复</strong>，请谨慎操作</li>
                 <li>✅ 导出功能导出的是<strong>当前筛选结果</strong>，不是全部数据</li>
@@ -448,7 +448,7 @@
         <div class="test-steps">
             <ol>
                 <li>在主菜单中找到"库存管理"菜单组</li>
-                <li>点击"库存明细"子菜单</li>
+                <li>点击"成品明细"子菜单</li>
                 <li>页面加载后会显示所有库存数据</li>
                 <li>使用筛选条件查询需要的数据</li>
                 <li>勾选记录后可进行锁定、解锁、清空等操作</li>

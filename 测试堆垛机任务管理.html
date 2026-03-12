@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>任务列表功能测试</title>
+    <title>堆垛机任务管理功能测试</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -113,14 +113,14 @@
 </head>
 <body>
     <div class="test-container">
-        <h1>📋 任务列表功能测试说明</h1>
+        <h1>📋 堆垛机任务管理功能测试说明</h1>
         
         <div class="feature-list">
             <h2>✨ 功能概述</h2>
-            <p>任务列表页面提供了完整的任务查询、管理和导出功能，支持任务加急、强制完成和取消等操作。</p>
+            <p>堆垛机任务管理页面提供了完整的任务查询、管理和导出功能，支持任务置顶、强制完成和取消等操作。</p>
             <ul>
                 <li>📊 <strong>多维度查询</strong>：支持按任务号、单据号、类型、状态、时间等多个维度筛选</li>
-                <li>⚡ <strong>任务加急</strong>：待执行状态的任务可设置为加急，优先执行</li>
+                <li>⚡ <strong>任务置顶</strong>：待执行状态的任务可设置为置顶，优先执行</li>
                 <li>✅ <strong>强制完成</strong>：执行中/异常状态的任务可强制完成，自动更新库存</li>
                 <li>❌ <strong>任务取消</strong>：待执行状态的任务可取消，不再执行</li>
                 <li>📥 <strong>数据导出</strong>：可将查询结果导出为CSV文件</li>
@@ -233,7 +233,7 @@
                     <li>验证列表只显示状态为"待执行"的任务</li>
                 </ol>
                 <div class="expected">
-                    <strong>预期结果：</strong>显示所有待执行的任务，这些任务可以进行加急或取消操作
+                    <strong>预期结果：</strong>显示所有待执行的任务，这些任务可以进行置顶或取消操作
                 </div>
             </div>
         </div>
@@ -254,21 +254,21 @@
         </div>
 
         <div class="test-section">
-            <div class="test-title">测试6：任务加急功能</div>
+            <div class="test-title">测试6：任务置顶功能</div>
             <div class="test-steps">
                 <ol>
                     <li>筛选出状态为"待执行"的任务</li>
-                    <li>找到一个未加急的任务，点击【加急】按钮</li>
+                    <li>找到一个未置顶的任务，点击【置顶】按钮</li>
                     <li>在确认对话框中点击"确定"</li>
-                    <li>验证任务号后面显示红色"加急"标识</li>
-                    <li>验证该任务的【加急】按钮消失</li>
+                    <li>验证任务号后面显示红色"置顶"标识</li>
+                    <li>验证该任务的【置顶】按钮消失</li>
                 </ol>
                 <div class="expected">
                     <strong>预期结果：</strong>
                     <ul>
-                        <li>任务被标记为加急，显示红色"加急"标签</li>
-                        <li>加急后的任务将优先执行</li>
-                        <li>已加急的任务不能再次加急</li>
+                        <li>任务被标记为置顶，显示红色"置顶"标签</li>
+                        <li>置顶后的任务将优先执行</li>
+                        <li>已置顶的任务不能再次置顶</li>
                     </ul>
                 </div>
             </div>
@@ -289,7 +289,7 @@
                     <ul>
                         <li>任务状态变为"已取消"（灰色标签）</li>
                         <li>已取消的任务不再执行</li>
-                        <li>如果任务之前是加急状态，加急标识也会消失</li>
+                        <li>如果任务之前是置顶状态，置顶标识也会消失</li>
                     </ul>
                 </div>
             </div>
@@ -331,11 +331,11 @@
                 <div class="expected">
                     <strong>预期结果：</strong>
                     <ul>
-                        <li>文件名格式：任务列表_YYYYMMDD_HHMMSS.csv</li>
+                        <li>文件名格式：堆垛机任务管理_YYYYMMDD_HHMMSS.csv</li>
                         <li>文件包含所有列的数据</li>
                         <li>中文显示正常（UTF-8 BOM编码）</li>
                         <li>导出的是当前筛选后的数据</li>
-                        <li>包含"是否加急"列</li>
+                        <li>包含"是否置顶"列</li>
                     </ul>
                 </div>
             </div>
@@ -368,7 +368,7 @@
             <div class="test-steps">
                 <p><strong>验证不同状态下的可用操作：</strong></p>
                 <ul>
-                    <li><strong>待执行</strong>：可以加急、可以取消</li>
+                    <li><strong>待执行</strong>：可以置顶、可以取消</li>
                     <li><strong>执行中</strong>：可以强制完成</li>
                     <li><strong>异常</strong>：可以强制完成</li>
                     <li><strong>已完成</strong>：无操作按钮</li>
@@ -403,20 +403,20 @@
         </div>
 
         <div class="test-section">
-            <div class="test-title">规则3：任务加急的优先级</div>
+            <div class="test-title">规则3：任务置顶的优先级</div>
             <div class="test-steps">
                 <p><strong>场景：</strong>紧急出库需求</p>
                 <ol>
                     <li>找到一个待执行的出库任务</li>
-                    <li>点击【加急】设置为加急任务</li>
-                    <li>验证任务显示加急标识</li>
+                    <li>点击【置顶】设置为置顶任务</li>
+                    <li>验证任务显示置顶标识</li>
                 </ol>
                 <div class="expected">
                     <strong>业务含义：</strong>
                     <ul>
-                        <li>加急任务在任务队列中优先执行</li>
-                        <li>加急标识醒目显示（红色标签）</li>
-                        <li>已加急的任务不能重复加急</li>
+                        <li>置顶任务在任务队列中优先执行</li>
+                        <li>置顶标识醒目显示（红色标签）</li>
+                        <li>已置顶的任务不能重复置顶</li>
                     </ul>
                 </div>
             </div>
@@ -425,7 +425,7 @@
         <h2>📝 注意事项</h2>
         <div class="note">
             <ul>
-                <li>✅ 任务加急功能仅对<strong>待执行</strong>状态的任务有效</li>
+                <li>✅ 任务置顶功能仅对<strong>待执行</strong>状态的任务有效</li>
                 <li>✅ 强制完成功能仅对<strong>执行中/异常</strong>状态的任务有效</li>
                 <li>✅ 任务取消功能仅对<strong>待执行</strong>状态的任务有效</li>
                 <li>✅ 强制完成后系统会<strong>自动更新库存</strong>，请谨慎操作</li>
@@ -439,10 +439,10 @@
         <div class="test-steps">
             <ol>
                 <li>在主菜单中找到"任务管理"菜单组</li>
-                <li>点击"任务列表"子菜单</li>
+                <li>点击"堆垛机任务管理"子菜单</li>
                 <li>页面加载后会显示所有任务数据</li>
                 <li>使用筛选条件查询需要的任务</li>
-                <li>根据任务状态进行相应操作（加急、取消、强制完成）</li>
+                <li>根据任务状态进行相应操作（置顶、取消、强制完成）</li>
                 <li>点击导出按钮可下载当前数据</li>
             </ol>
         </div>

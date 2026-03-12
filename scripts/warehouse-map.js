@@ -172,10 +172,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // 更新库存明细按钮状态
+    // 更新成品明细按钮状态
     function updateInventoryDetailButton() {
         const detailBtn = document.getElementById('inventoryDetailBtn');
-        // 任何选中的库位都可以查看库存明细
+        // 任何选中的库位都可以查看成品明细
         if (currentLocationData && !currentSelectedCell.classList.contains('disabled')) {
             detailBtn.disabled = false;
             detailBtn.style.opacity = '1';
@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 更新库位解锁按钮状态
                 updateUnlockLocationButton();
                 
-                // 更新库存明细按钮状态
+                // 更新成品明细按钮状态
                 updateInventoryDetailButton();
                 
                 // 更新弹窗内容
@@ -1110,14 +1110,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ========== 库存明细功能 ==========
+    // ========== 成品明细功能 ==========
     const inventoryDetailModal = document.getElementById('inventoryDetailModal');
     const inventoryDetailBtn = document.getElementById('inventoryDetailBtn');
     const closeInventoryDetailModal = document.getElementById('closeInventoryDetailModal');
     const closeInventoryDetailBtn = document.getElementById('closeInventoryDetailBtn');
     const inventoryDetailTableBody = document.getElementById('inventoryDetailTableBody');
 
-    // 生成模拟库存明细数据（根据库位状态）
+    // 生成模拟成品明细数据（根据库位状态）
     function generateInventoryDetails(materials, containerCode, locationStatus) {
         // 空库位和空托库位：没有物料数据
         if (locationStatus === 'empty' || locationStatus === 'empty-pallet') {
@@ -1234,12 +1234,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return `${year}-${month}-${day} ${hours}:${minutes}`;
     }
 
-    // 打开库存明细弹窗
+    // 打开成品明细弹窗
     if (inventoryDetailBtn) {
         inventoryDetailBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             
-            console.log('库存明细按钮被点击');
+            console.log('成品明细按钮被点击');
             
             if (this.disabled) {
                 console.log('按钮被禁用，无法打开弹窗');
@@ -1281,12 +1281,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // 显示弹窗
             if (inventoryDetailModal) {
                 inventoryDetailModal.style.display = 'flex';
-                console.log('✅ 库存明细弹窗已显示');
+                console.log('✅ 成品明细弹窗已显示');
             }
         });
     }
 
-    // 渲染库存明细表格
+    // 渲染成品明细表格
     function renderInventoryDetailTable(details) {
         if (!details || details.length === 0) {
             inventoryDetailTableBody.innerHTML = '<tr><td colspan="7" class="empty-row">暂无物料</td></tr>';
@@ -1306,10 +1306,10 @@ document.addEventListener('DOMContentLoaded', function() {
         `).join('');
     }
 
-    // 关闭库存明细弹窗
+    // 关闭成品明细弹窗
     function closeInventoryDetailModalFunc() {
         inventoryDetailModal.style.display = 'none';
-        console.log('库存明细弹窗已关闭');
+        console.log('成品明细弹窗已关闭');
     }
 
     if (closeInventoryDetailModal) {

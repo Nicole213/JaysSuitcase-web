@@ -51,10 +51,9 @@
                     <label>入库类型：</label>
                     <select class="filter-select" id="searchType">
                         <option value="">全部</option>
-                        <option value="生产入库">生产入库</option>
-                        <option value="采购入库">采购入库</option>
-                        <option value="退料入库">退料入库</option>
-                        <option value="其他">其他</option>
+                        <option value="成品入库">成品入库</option>
+                        <option value="模具入库">模具入库</option>
+                        <option value="辅材入库">辅材入库</option>
                     </select>
                 </div>
                 <div class="filter-group date-range-group">
@@ -126,16 +125,16 @@
                             <label class="required">入库类型：</label>
                             <select class="form-input" id="orderType" required>
                                 <option value="">请选择</option>
-                                <option value="自制件入库">自制件入库</option>
-                                <option value="采购件入库">采购件入库</option>
-                                <option value="其他">其他</option>
+                                <option value="成品入库">成品入库</option>
+                                <option value="模具入库">模具入库</option>
+                                <option value="辅材入库">辅材入库</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label>关联上游单据号：</label>
-                            <input type="text" class="form-input" id="upstreamNo" placeholder="请输入客户WMS单据号">
+                            <input type="text" class="form-input" id="upstreamNo" placeholder="手动输入关联客户ERP的单据">
                         </div>
                         <div class="form-group">
                             <label>备注：</label>

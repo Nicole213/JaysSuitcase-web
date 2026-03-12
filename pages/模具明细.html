@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模具明细</title>
+    <link rel="stylesheet" href="../styles/pages.css">
+    <link rel="stylesheet" href="../styles/mold-detail.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <h1>模具明细</h1>
+        </div>
+
+        <!-- 查询筛选区 -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>物料编码/名称：</label>
+                    <input type="text" class="filter-input" id="searchMaterial" placeholder="请输入物料编码或名称">
+                </div>
+                <div class="filter-group">
+                    <label>容器编码：</label>
+                    <input type="text" class="filter-input" id="searchContainer" placeholder="请输入容器编码">
+                </div>
+                <div class="filter-group">
+                    <label>库存状态：</label>
+                    <select class="filter-select" id="searchStatus">
+                        <option value="">全部</option>
+                        <option value="正常">正常</option>
+                        <option value="锁定">锁定</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>排：</label>
+                    <input type="number" class="filter-input small" id="searchRow" placeholder="排">
+                </div>
+                <div class="filter-group">
+                    <label>列：</label>
+                    <input type="number" class="filter-input small" id="searchCol" placeholder="列">
+                </div>
+                <div class="filter-group">
+                    <label>层：</label>
+                    <input type="number" class="filter-input small" id="searchLevel" placeholder="层">
+                </div>
+                <div class="filter-group">
+                    <label>深：</label>
+                    <input type="number" class="filter-input small" id="searchDepth" placeholder="深">
+                </div>
+                <button class="search-btn" id="searchBtn">🔍 查询</button>
+                <button class="reset-btn" id="resetBtn">🔄 重置</button>
+            </div>
+        </div>
+
+        <!-- 操作按钮区 -->
+        <div class="action-bar">
+            <button class="primary-btn" id="lockBtn">🔒 物料锁定</button>
+            <button class="primary-btn" id="unlockBtn">🔓 物料解锁</button>
+            <button class="danger-btn" id="clearBtn">🗑️ 清空库存</button>
+            <button class="export-btn" id="exportBtn">📥 导出</button>
+        </div>
+
+        <!-- 表格区 -->
+        <div class="table-section">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th width="50"><input type="checkbox" id="selectAll"></th>
+                        <th width="120">物料编码</th>
+                        <th width="150">物料名称</th>
+                        <th width="100">容器编码</th>
+                        <th width="120">容器类型</th>
+                        <th width="120">库位编码</th>
+                        <th width="100">库区</th>
+                        <th width="100">库存数量</th>
+                        <th width="150">组盘时间</th>
+                        <th width="150">入库时间</th>
+                        <th width="80">库龄(天)</th>
+                        <th width="100">库存状态</th>
+                    </tr>
+                </thead>
+                <tbody id="moldTableBody">
+                    <!-- 数据将通过JavaScript动态生成 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination">
+            <button class="page-btn" id="prevPage">上一页</button>
+            <span class="page-info">第 <span id="currentPage">1</span> 页，共 <span id="totalPages">1</span> 页</span>
+            <button class="page-btn" id="nextPage">下一页</button>
+        </div>
+    </div>
+
+    <script src="../scripts/mold-detail.js"></script>
+</body>
+</html>

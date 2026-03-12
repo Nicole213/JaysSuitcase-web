@@ -1,4 +1,4 @@
-/* 堆垛机任务管理页面样式 - 参考入库单页面风格 */
+/* AGV任务管理页面样式 - 参考堆垛机任务管理页面风格 */
 
 .page-header h1 {
     font-size: 24px;
@@ -215,14 +215,19 @@
     font-weight: 500;
 }
 
-.command-badge.inbound {
+.command-badge.transport {
     background: #e6f7ff;
     color: #1890ff;
 }
 
-.command-badge.outbound {
-    background: #fff7e6;
-    color: #fa8c16;
+.command-badge.charge {
+    background: #f6ffed;
+    color: #52c41a;
+}
+
+.command-badge.standby {
+    background: #f5f5f5;
+    color: #999;
 }
 
 /* 任务类型标签 */
@@ -236,8 +241,8 @@
     color: #667eea;
 }
 
-/* 物料信息 */
-.material-info {
+/* 任务描述 */
+.task-description {
     font-size: 13px;
     color: #666;
     line-height: 1.6;
@@ -248,6 +253,28 @@
     font-size: 13px;
     color: #ff4d4f;
     font-weight: 500;
+}
+
+/* 电量显示 */
+.battery-level {
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.battery-high {
+    color: #52c41a;
+    background: #f6ffed;
+}
+
+.battery-medium {
+    color: #fa8c16;
+    background: #fff7e6;
+}
+
+.battery-low {
+    color: #ff4d4f;
+    background: #fff1f0;
 }
 
 /* 操作按钮 */

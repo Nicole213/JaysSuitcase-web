@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGV平库通道管理</title>
+    <link rel="stylesheet" href="../styles/pages.css">
+    <link rel="stylesheet" href="../styles/agv-channel.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <h1>AGV平库通道管理</h1>
+        </div>
+
+        <!-- 查询筛选区 -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>通道编码：</label>
+                    <input type="text" class="filter-input" id="searchCode" placeholder="请输入通道编码">
+                </div>
+                <div class="filter-group">
+                    <label>通道名称：</label>
+                    <input type="text" class="filter-input" id="searchName" placeholder="请输入通道名称">
+                </div>
+                <div class="filter-group">
+                    <label>所属库区：</label>
+                    <select class="filter-select" id="areaFilter">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>状态：</label>
+                    <select class="filter-select" id="statusFilter">
+                        <option value="">全部</option>
+                        <option value="启用">启用</option>
+                        <option value="禁用">禁用</option>
+                    </select>
+                </div>
+                <button class="search-btn" id="searchBtn">🔍 查询</button>
+                <button class="reset-btn" id="resetBtn">🔄 重置</button>
+            </div>
+        </div>
+
+        <!-- 操作按钮区 -->
+        <div class="action-bar">
+            <button class="primary-btn" id="addBtn">➕ 新增通道</button>
+        </div>
+
+        <!-- 表格区 -->
+        <div class="table-section">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th width="120">通道编码</th>
+                        <th width="150">通道名称</th>
+                        <th width="120">所属库区</th>
+                        <th width="100">库位结构</th>
+                        <th width="80">状态</th>
+                        <th width="200">备注</th>
+                        <th width="150">创建时间</th>
+                        <th width="200">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="channelTableBody">
+                    <!-- 数据将通过JavaScript动态生成 -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination">
+            <button class="page-btn" id="prevPage">上一页</button>
+            <span class="page-info">第 <span id="currentPage">1</span> 页，共 <span id="totalPages">1</span> 页</span>
+            <button class="page-btn" id="nextPage">下一页</button>
+        </div>
+    </div>
+
+    <!-- 新增/编辑通道弹窗 -->
+    <div class="modal" id="channelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">新增AGV平库通道</h3>
+                <span class="modal-close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="channelForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="required">通道编码：</label>
+                            <input type="text" class="form-input" id="channelCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="required">通道名称：</label>
+                            <input type="text" class="form-input" id="channelName" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="required">所属库区：</label>
+                            <select class="form-input" id="belongArea" required>
+                                <option value="">请选择</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="required">库位结构：</label>
+                            <select class="form-input" id="locationStructure" required>
+                                <option value="">请选择</option>
+                                <option value="单深">单深</option>
+                                <option value="双深">双深</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="required">状态：</label>
+                            <select class="form-input" id="status" required>
+                                <option value="启用">启用</option>
+                                <option value="禁用">禁用</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <!-- 占位，保持布局平衡 -->
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>备注：</label>
+                            <textarea class="form-input" id="remark" rows="3" placeholder="请输入备注信息"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn primary" id="saveBtn">保存</button>
+                <button class="modal-btn secondary" id="cancelBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/agv-channel.js"></script>
+</body>
+</html>
