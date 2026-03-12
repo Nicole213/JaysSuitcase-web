@@ -11,8 +11,8 @@ let shipmentOrdersData = [
         materials: [
             { code: 'WL-2024-001', name: '电子元件A型', plannedQty: 80, shippedQty: 80 }
         ],
-        customerName: '大同汽车制造有限公司',
-        deliveryAddress: '山西省大同市开发区工业园区88号',
+        customerName: '吉仕箱包制造有限公司',
+        deliveryAddress: '广东省东莞市工业园区88号',
         status: '已完成',
         createTime: '2024-01-15 09:30:00',
         canEdit: false,
