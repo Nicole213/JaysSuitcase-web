@@ -1,4 +1,4 @@
-/* AGV平库库区管理页面样式 - 继承系统统一样式 */
+/* AGV平库库区管理页面样式 */
 
 .page-header h1 {
     font-size: 24px;
@@ -6,13 +6,12 @@
     margin: 0 0 20px 0;
 }
 
-/* 筛选区域 */
 .filter-section {
-    background: white;
+    background: #fff;
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 16px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .filter-row {
@@ -28,13 +27,18 @@
     gap: 8px;
 }
 
+.filter-group-wide {
+    min-width: 340px;
+}
+
 .filter-group label {
     font-size: 14px;
     color: #666;
     white-space: nowrap;
 }
 
-.filter-input {
+.filter-input,
+.filter-select {
     padding: 8px 12px;
     border: 1px solid #d9d9d9;
     border-radius: 4px;
@@ -43,24 +47,19 @@
     width: 200px;
 }
 
-.filter-input:focus {
-    border-color: #667eea;
-}
-
 .filter-select {
-    padding: 8px 12px;
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
-    font-size: 14px;
-    outline: none;
-    min-width: 150px;
+    min-width: 140px;
 }
 
-.filter-select:focus {
+.filter-input:focus,
+.filter-select:focus,
+.multi-select-trigger:focus,
+.form-input:focus {
     border-color: #667eea;
 }
 
-.search-btn, .reset-btn {
+.search-btn,
+.reset-btn {
     padding: 8px 20px;
     border: none;
     border-radius: 4px;
@@ -71,7 +70,7 @@
 
 .search-btn {
     background: #667eea;
-    color: white;
+    color: #fff;
 }
 
 .search-btn:hover {
@@ -87,7 +86,6 @@
     background: #e8e8e8;
 }
 
-/* 操作按钮区 */
 .action-bar {
     margin-bottom: 16px;
 }
@@ -95,7 +93,7 @@
 .primary-btn {
     padding: 10px 24px;
     background: #667eea;
-    color: white;
+    color: #fff;
     border: none;
     border-radius: 4px;
     font-size: 14px;
@@ -105,24 +103,23 @@
 
 .primary-btn:hover {
     background: #5568d3;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-/* 表格区域 */
 .table-section {
-    background: white;
+    background: #fff;
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 16px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     overflow-x: auto;
 }
 
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1200px;
+    min-width: 1280px;
 }
 
 .data-table thead {
@@ -143,17 +140,17 @@
     color: #666;
     font-size: 14px;
     border-bottom: 1px solid #f0f0f0;
+    vertical-align: top;
 }
 
 .data-table tbody tr:hover {
     background: #fafafa;
 }
 
-/* 状态标签 */
 .status-badge {
     display: inline-block;
     padding: 4px 12px;
-    border-radius: 12px;
+    border-radius: 999px;
     font-size: 12px;
     font-weight: 500;
 }
@@ -168,38 +165,65 @@
     color: #999;
 }
 
-/* 操作按钮 */
-.action-btns {
+.channel-tag-list,
+.detail-tags {
     display: flex;
-    gap: 12px;
     flex-wrap: wrap;
+    gap: 8px;
 }
 
-.edit-btn, .delete-btn, .enable-btn, .disable-btn {
+.channel-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4c63d2;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.channel-empty {
+    color: #999;
+}
+
+.action-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.action-link {
     padding: 0;
     border: none;
     background: none;
     color: #1890ff;
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.3s;
-    text-decoration: none;
+    transition: color 0.2s;
 }
 
-.edit-btn:hover, .delete-btn:hover, .enable-btn:hover, .disable-btn:hover {
+.action-link:hover {
     color: #40a9ff;
     text-decoration: underline;
 }
 
-.delete-btn {
+.action-link.danger {
     color: #ff4d4f;
 }
 
-.delete-btn:hover {
+.action-link.danger:hover {
     color: #ff7875;
 }
 
-/* 分页 */
+.action-link.warning {
+    color: #fa8c16;
+}
+
+.action-link.success {
+    color: #52c41a;
+}
+
 .pagination {
     display: flex;
     justify-content: center;
@@ -210,7 +234,7 @@
 
 .page-btn {
     padding: 6px 16px;
-    background: white;
+    background: #fff;
     border: 1px solid #d9d9d9;
     border-radius: 4px;
     font-size: 14px;
@@ -233,15 +257,13 @@
     color: #666;
 }
 
-/* 弹窗样式 */
 .modal {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     z-index: 1000;
     align-items: center;
     justify-content: center;
@@ -252,13 +274,17 @@
 }
 
 .modal-content {
-    background: white;
+    background: #fff;
     border-radius: 12px;
     width: 90%;
-    max-width: 600px;
+    max-width: 640px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content-wide {
+    max-width: 960px;
 }
 
 .modal-header {
@@ -269,7 +295,7 @@
     align-items: center;
     position: sticky;
     top: 0;
-    background: white;
+    background: #fff;
     z-index: 1;
 }
 
@@ -283,8 +309,7 @@
     font-size: 24px;
     color: #999;
     cursor: pointer;
-    transition: color 0.3s;
-    flex-shrink: 0;
+    transition: color 0.2s;
 }
 
 .modal-close:hover {
@@ -336,13 +361,9 @@
     box-sizing: border-box;
 }
 
-.form-input:focus {
-    border-color: #667eea;
-}
-
-textarea.form-input {
-    resize: vertical;
-    font-family: inherit;
+.form-hint {
+    font-size: 12px;
+    color: #999;
 }
 
 .modal-footer {
@@ -353,7 +374,7 @@ textarea.form-input {
     gap: 12px;
     position: sticky;
     bottom: 0;
-    background: white;
+    background: #fff;
     z-index: 1;
 }
 
@@ -368,7 +389,7 @@ textarea.form-input {
 
 .modal-btn.primary {
     background: #667eea;
-    color: white;
+    color: #fff;
 }
 
 .modal-btn.primary:hover {
@@ -384,7 +405,150 @@ textarea.form-input {
     background: #e8e8e8;
 }
 
-/* 空数据状态 */
+.multi-select {
+    position: relative;
+    width: 240px;
+}
+
+.form-multi-select {
+    width: 100%;
+}
+
+.multi-select-trigger {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    text-align: left;
+}
+
+.multi-select-trigger span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.multi-select-arrow {
+    color: #999;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.multi-select-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 8px 0;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 10px 24px rgba(31, 35, 41, 0.12);
+    z-index: 20;
+}
+
+.multi-select.active .multi-select-dropdown {
+    display: block;
+}
+
+.multi-select-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+}
+
+.multi-select-option:hover {
+    background: #f7f9ff;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    background: #f8f9fc;
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.detail-item-full {
+    grid-column: 1 / -1;
+}
+
+.detail-label {
+    font-size: 12px;
+    color: #999;
+}
+
+.detail-value {
+    font-size: 15px;
+    color: #333;
+    word-break: break-all;
+}
+
+.detail-section {
+    margin-top: 20px;
+}
+
+.detail-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.detail-section-header h4 {
+    margin: 0;
+    font-size: 15px;
+    color: #333;
+}
+
+.detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.detail-table th,
+.detail-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    text-align: left;
+    font-size: 14px;
+}
+
+.detail-table th {
+    background: #f5f7fa;
+    color: #333;
+}
+
+.detail-empty {
+    text-align: center;
+    color: #999;
+    padding: 24px 12px;
+}
+
 .empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -407,36 +571,121 @@ textarea.form-input {
     color: #ccc;
 }
 
-/* 响应式设计 */
+.confirm-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirm-dialog.active {
+    display: flex;
+}
+
+.confirm-content {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.confirm-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 12px;
+}
+
+.confirm-message {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.confirm-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.confirm-btn.primary {
+    background: #ff4d4f;
+    color: #fff;
+}
+
+.confirm-btn.primary:hover {
+    background: #ff7875;
+}
+
+.confirm-btn.secondary {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.confirm-btn.secondary:hover {
+    background: #e8e8e8;
+}
+
+.confirm-btn.info {
+    background: #667eea;
+    color: #fff;
+}
+
+.confirm-btn.info:hover {
+    background: #5568d3;
+}
+
 @media (max-width: 768px) {
-    .filter-row {
+    .filter-row,
+    .form-row,
+    .pagination {
         flex-direction: column;
         align-items: stretch;
-        gap: 12px;
     }
-    
+
     .filter-group {
         flex-direction: column;
         align-items: stretch;
         gap: 4px;
     }
-    
-    .filter-input {
+
+    .filter-group-wide,
+    .filter-input,
+    .filter-select,
+    .multi-select {
         width: 100%;
+        min-width: 0;
     }
-    
-    .form-row {
-        flex-direction: column;
-        gap: 16px;
-    }
-    
+
     .action-btns {
         flex-direction: column;
         gap: 8px;
     }
-    
-    .pagination {
-        flex-direction: column;
-        gap: 12px;
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content,
+    .modal-content-wide {
+        width: calc(100% - 24px);
     }
 }

@@ -291,10 +291,15 @@ function searchInventory() {
     const material = document.getElementById('searchMaterial').value.trim().toLowerCase();
     const container = document.getElementById('searchContainer').value.trim().toLowerCase();
     const status = document.getElementById('searchStatus').value;
+    const area = document.getElementById('searchArea').value;
     const row = document.getElementById('searchRow').value.trim();
     const col = document.getElementById('searchCol').value.trim();
     const level = document.getElementById('searchLevel').value.trim();
     const depth = document.getElementById('searchDepth').value.trim();
+    const palletStart = document.getElementById('searchPalletStart').value;
+    const palletEnd = document.getElementById('searchPalletEnd').value;
+    const inboundStart = document.getElementById('searchInboundStart').value;
+    const inboundEnd = document.getElementById('searchInboundEnd').value;
     
     filteredData = inventoryData.filter(item => {
         const matchMaterial = !material || 
@@ -302,6 +307,7 @@ function searchInventory() {
             item.materialName.toLowerCase().includes(material);
         const matchContainer = !container || item.containerCode.toLowerCase().includes(container);
         const matchStatus = !status || item.status === status;
+        const matchArea = !area || item.area === area;
         
         // 解析库位编码
         const locationParts = item.locationCode.split('-');
@@ -309,9 +315,17 @@ function searchInventory() {
         const matchCol = !col || locationParts[1] === col;
         const matchLevel = !level || locationParts[2] === level;
         const matchDepth = !depth || locationParts[3] === depth;
+        const palletDate = item.palletTime.slice(0, 10);
+        const inboundDate = item.inboundTime.slice(0, 10);
+        const matchPalletStart = !palletStart || palletDate >= palletStart;
+        const matchPalletEnd = !palletEnd || palletDate <= palletEnd;
+        const matchInboundStart = !inboundStart || inboundDate >= inboundStart;
+        const matchInboundEnd = !inboundEnd || inboundDate <= inboundEnd;
         
         return matchMaterial && matchContainer && matchStatus && 
-               matchRow && matchCol && matchLevel && matchDepth;
+               matchArea && matchRow && matchCol && matchLevel && matchDepth &&
+               matchPalletStart && matchPalletEnd &&
+               matchInboundStart && matchInboundEnd;
     });
     
     currentPage = 1;
@@ -324,10 +338,15 @@ function resetSearch() {
     document.getElementById('searchMaterial').value = '';
     document.getElementById('searchContainer').value = '';
     document.getElementById('searchStatus').value = '';
+    document.getElementById('searchArea').value = '';
     document.getElementById('searchRow').value = '';
     document.getElementById('searchCol').value = '';
     document.getElementById('searchLevel').value = '';
     document.getElementById('searchDepth').value = '';
+    document.getElementById('searchPalletStart').value = '';
+    document.getElementById('searchPalletEnd').value = '';
+    document.getElementById('searchInboundStart').value = '';
+    document.getElementById('searchInboundEnd').value = '';
     
     filteredData = [...inventoryData];
     currentPage = 1;

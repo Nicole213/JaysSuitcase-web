@@ -13,7 +13,6 @@
             <h1>AGV平库库位管理</h1>
         </div>
 
-        <!-- 查询筛选区 -->
         <div class="filter-section">
             <div class="filter-row">
                 <div class="filter-group">
@@ -27,7 +26,7 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>通道：</label>
+                    <label>所属通道：</label>
                     <select class="filter-select" id="channelFilter">
                         <option value="">全部</option>
                     </select>
@@ -46,44 +45,65 @@
                     <label>锁定状态：</label>
                     <select class="filter-select" id="lockFilter">
                         <option value="">全部</option>
-                        <option value="锁定">锁定</option>
                         <option value="正常">正常</option>
+                        <option value="锁定">锁定</option>
                     </select>
                 </div>
-                <button class="search-btn" id="searchBtn">🔍 查询</button>
-                <button class="reset-btn" id="resetBtn">🔄 重置</button>
+                <div class="filter-group">
+                    <label>启用状态：</label>
+                    <select class="filter-select" id="enableFilter">
+                        <option value="">全部</option>
+                        <option value="启用">启用</option>
+                        <option value="禁用">禁用</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>AGV站点：</label>
+                    <select class="filter-select" id="agvSiteFilter">
+                        <option value="">全部</option>
+                        <option value="是">是</option>
+                        <option value="否">否</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>站点类型：</label>
+                    <select class="filter-select" id="siteTypeFilter">
+                        <option value="">全部</option>
+                        <option value="托盘交接站点">托盘交接站点</option>
+                        <option value="AGV停靠站点">AGV停靠站点</option>
+                        <option value="充电补给站点">充电补给站点</option>
+                    </select>
+                </div>
+                <button class="search-btn" id="searchBtn">查询</button>
+                <button class="reset-btn" id="resetBtn">重置</button>
             </div>
         </div>
 
-        <!-- 操作按钮区 -->
         <div class="action-bar">
-            <button class="primary-btn" id="addBtn">➕ 新增库位</button>
+            <button class="primary-btn" id="addBtn">新增</button>
         </div>
 
-        <!-- 表格区 -->
         <div class="table-section">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th width="120">库位编码</th>
-                        <th width="120">所属库区</th>
-                        <th width="120">通道</th>
+                        <th width="150">库位编码</th>
+                        <th width="160">库位名称</th>
+                        <th width="170">所属库区</th>
+                        <th width="170">所属通道</th>
                         <th width="100">当前状态</th>
                         <th width="100">锁定状态</th>
                         <th width="100">启用状态</th>
-                        <th width="120">当前容器号</th>
-                        <th width="100">AGV站点</th>
-                        <th width="100">站点类型</th>
-                        <th width="200">操作</th>
+                        <th width="160">当前容器编号</th>
+                        <th width="90">AGV站点</th>
+                        <th width="180">站点类型</th>
+                        <th width="240">操作</th>
                     </tr>
                 </thead>
-                <tbody id="locationTableBody">
-                    <!-- 数据将通过JavaScript动态生成 -->
-                </tbody>
+                <tbody id="locationTableBody"></tbody>
             </table>
         </div>
 
-        <!-- 分页 -->
         <div class="pagination">
             <button class="page-btn" id="prevPage">上一页</button>
             <span class="page-info">第 <span id="currentPage">1</span> 页，共 <span id="totalPages">1</span> 页</span>
@@ -91,7 +111,6 @@
         </div>
     </div>
 
-    <!-- 新增/编辑库位弹窗 -->
     <div class="modal" id="locationModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -106,19 +125,25 @@
                             <input type="text" class="form-input" id="locationCode" required>
                         </div>
                         <div class="form-group">
+                            <label class="required">库位名称：</label>
+                            <input type="text" class="form-input" id="locationName" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
                             <label class="required">所属库区：</label>
                             <select class="form-input" id="belongArea" required>
                                 <option value="">请选择</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="form-row">
                         <div class="form-group">
-                            <label class="required">通道：</label>
+                            <label class="required">所属通道：</label>
                             <select class="form-input" id="channel" required>
                                 <option value="">请选择</option>
                             </select>
                         </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group">
                             <label class="required">当前状态：</label>
                             <select class="form-input" id="currentStatus" required>
@@ -128,36 +153,42 @@
                                 <option value="空托">空托</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>当前容器号：</label>
-                            <input type="text" class="form-input" id="containerNo" placeholder="请输入容器号">
-                        </div>
-                        <div class="form-group">
-                            <label class="required">是否AGV站点：</label>
-                            <select class="form-input" id="isAgvSite" required>
-                                <option value="否">否</option>
-                                <option value="是">是</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>站点类型：</label>
-                            <select class="form-input" id="siteType">
-                                <option value="">请选择</option>
-                                <option value="入库站点">入库站点</option>
-                                <option value="出库站点">出库站点</option>
-                                <option value="缓存站点">缓存站点</option>
-                                <option value="检测站点">检测站点</option>
-                            </select>
-                        </div>
                         <div class="form-group">
                             <label class="required">启用状态：</label>
                             <select class="form-input" id="enableStatus" required>
                                 <option value="启用">启用</option>
                                 <option value="禁用">禁用</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>当前容器编号：</label>
+                            <input type="text" class="form-input" id="containerNo" placeholder="请输入当前容器编号">
+                        </div>
+                        <div class="form-group">
+                            <label class="required">锁定状态：</label>
+                            <select class="form-input" id="lockStatus" required>
+                                <option value="正常">正常</option>
+                                <option value="锁定">锁定</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="required">AGV站点：</label>
+                            <select class="form-input" id="isAgvSite" required>
+                                <option value="否">否</option>
+                                <option value="是">是</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>站点类型：</label>
+                            <select class="form-input" id="siteType">
+                                <option value="">请选择</option>
+                                <option value="托盘交接站点">托盘交接站点</option>
+                                <option value="AGV停靠站点">AGV停靠站点</option>
+                                <option value="充电补给站点">充电补给站点</option>
                             </select>
                         </div>
                     </div>
@@ -172,6 +203,39 @@
             <div class="modal-footer">
                 <button class="modal-btn primary" id="saveBtn">保存</button>
                 <button class="modal-btn secondary" id="cancelBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="detailModal">
+        <div class="modal-content modal-content-wide">
+            <div class="modal-header">
+                <h3>托盘详情</h3>
+                <span class="modal-close" id="closeDetailModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="detail-grid" id="detailSummary"></div>
+
+                <div class="detail-section">
+                    <div class="detail-section-header">
+                        <h4>托盘明细</h4>
+                    </div>
+                    <table class="detail-table">
+                        <thead>
+                            <tr>
+                                <th width="160">托盘编号</th>
+                                <th width="180">容器编号</th>
+                                <th width="140">物料编码</th>
+                                <th width="180">物料名称</th>
+                                <th width="100">数量</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailPallets"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="closeDetailBtn">关闭</button>
             </div>
         </div>
     </div>

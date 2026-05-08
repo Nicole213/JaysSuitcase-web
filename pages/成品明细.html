@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>成品明细</title>
+    <title>成品库存</title>
     <link rel="stylesheet" href="../styles/pages.css">
     <link rel="stylesheet" href="../styles/inventory-detail.css">
 </head>
 <body>
     <div class="page-container">
         <div class="page-header">
-            <h1>成品明细</h1>
+            <h1>成品库存</h1>
         </div>
 
         <!-- 查询筛选区 -->
@@ -32,6 +32,15 @@
                         <option value="锁定">锁定</option>
                     </select>
                 </div>
+                <div class="filter-group">
+                    <label>库区：</label>
+                    <select class="filter-select" id="searchArea">
+                        <option value="">全部</option>
+                        <option value="库区A">库区A</option>
+                        <option value="库区B">库区B</option>
+                        <option value="库区C">库区C</option>
+                    </select>
+                </div>
             </div>
             <div class="filter-row">
                 <div class="filter-group">
@@ -49,6 +58,18 @@
                 <div class="filter-group">
                     <label>深：</label>
                     <input type="number" class="filter-input small" id="searchDepth" placeholder="深">
+                </div>
+                <div class="filter-group">
+                    <label>组盘时间：</label>
+                    <input type="date" class="filter-input" id="searchPalletStart">
+                    <span>至</span>
+                    <input type="date" class="filter-input" id="searchPalletEnd">
+                </div>
+                <div class="filter-group">
+                    <label>入库时间：</label>
+                    <input type="date" class="filter-input" id="searchInboundStart">
+                    <span>至</span>
+                    <input type="date" class="filter-input" id="searchInboundEnd">
                 </div>
                 <button class="search-btn" id="searchBtn">🔍 查询</button>
                 <button class="reset-btn" id="resetBtn">🔄 重置</button>

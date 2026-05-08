@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成品信息查询</title>
+    <link rel="stylesheet" href="../styles/pages.css">
+    <link rel="stylesheet" href="../styles/finished-product-query.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <h1>成品信息查询</h1>
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>SN码：</label>
+                    <input type="text" class="filter-input" id="searchSnCode" placeholder="请输入SN码">
+                </div>
+                <div class="filter-group">
+                    <label>物料编码/名称：</label>
+                    <input type="text" class="filter-input" id="searchMaterial" placeholder="请输入物料编码或名称">
+                </div>
+                <div class="filter-group">
+                    <label>容器编码：</label>
+                    <input type="text" class="filter-input" id="searchContainer" placeholder="请输入容器编码">
+                </div>
+                <div class="filter-group">
+                    <label>库区：</label>
+                    <select class="filter-select" id="searchArea">
+                        <option value="">全部</option>
+                        <option value="库区A">库区A</option>
+                        <option value="库区B">库区B</option>
+                        <option value="库区C">库区C</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>物料状态：</label>
+                    <select class="filter-select status-select" id="searchStatus">
+                        <option value="">全部</option>
+                        <option value="待包装待入库">待包装待入库</option>
+                        <option value="待包装已入平库">待包装已入平库</option>
+                        <option value="待包装已出平库">待包装已出平库</option>
+                        <option value="已包装待检">已包装待检</option>
+                        <option value="检验中">检验中</option>
+                        <option value="已检待入库">已检待入库</option>
+                        <option value="已检入平库">已检入平库</option>
+                        <option value="已入立库">已入立库</option>
+                        <option value="已发货">已发货</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group compact-location-group">
+                    <label>排：</label>
+                    <input type="number" class="filter-input small" id="searchRow" placeholder="排">
+                </div>
+                <div class="filter-group compact-location-group">
+                    <label>列：</label>
+                    <input type="number" class="filter-input small" id="searchCol" placeholder="列">
+                </div>
+                <div class="filter-group compact-location-group">
+                    <label>层：</label>
+                    <input type="number" class="filter-input small" id="searchLevel" placeholder="层">
+                </div>
+                <div class="filter-group compact-location-group">
+                    <label>深：</label>
+                    <input type="number" class="filter-input small" id="searchDepth" placeholder="深">
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>组盘时间：</label>
+                    <input type="date" class="filter-input" id="searchPalletStart">
+                    <span class="range-separator">至</span>
+                    <input type="date" class="filter-input" id="searchPalletEnd">
+                </div>
+                <div class="filter-group">
+                    <label>入库时间：</label>
+                    <input type="date" class="filter-input" id="searchInboundStart">
+                    <span class="range-separator">至</span>
+                    <input type="date" class="filter-input" id="searchInboundEnd">
+                </div>
+                <div class="filter-group">
+                    <label>出库时间：</label>
+                    <input type="date" class="filter-input" id="searchOutboundStart">
+                    <span class="range-separator">至</span>
+                    <input type="date" class="filter-input" id="searchOutboundEnd">
+                </div>
+                <div class="filter-group">
+                    <label>最后更新时间：</label>
+                    <input type="date" class="filter-input" id="searchLastUpdateStart">
+                    <span class="range-separator">至</span>
+                    <input type="date" class="filter-input" id="searchLastUpdateEnd">
+                </div>
+                <button class="search-btn" id="searchBtn">查询</button>
+                <button class="reset-btn" id="resetBtn">重置</button>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th width="150">SN码</th>
+                        <th width="130">物料编码</th>
+                        <th width="160">物料名称</th>
+                        <th width="120">容器编码</th>
+                        <th width="120">容器类型</th>
+                        <th width="130">库位编码</th>
+                        <th width="100">库区</th>
+                        <th width="150">组盘时间</th>
+                        <th width="150">入库时间</th>
+                        <th width="150">出库时间</th>
+                        <th width="140">物料状态</th>
+                        <th width="160">最后更新时间</th>
+                        <th width="100">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="productTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button class="page-btn" id="prevPage">上一页</button>
+            <span class="page-info">第 <span id="currentPage">1</span> 页，共 <span id="totalPages">1</span> 页</span>
+            <button class="page-btn" id="nextPage">下一页</button>
+        </div>
+    </div>
+
+    <div class="modal" id="historyModal">
+        <div class="modal-content modal-content-wide">
+            <div class="modal-header">
+                <h3>物料SN历史流转记录</h3>
+                <span class="modal-close" id="closeHistoryModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="detail-grid" id="historySummary"></div>
+                <div class="detail-section">
+                    <div class="detail-section-header">
+                        <h4>历史流转记录</h4>
+                    </div>
+                    <table class="detail-table">
+                        <thead>
+                            <tr>
+                                <th width="170">时间</th>
+                                <th width="140">物料状态</th>
+                                <th width="130">业务节点</th>
+                                <th width="120">容器编码</th>
+                                <th width="130">库位编码</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="closeHistoryBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/finished-product-query.js"></script>
+</body>
+</html>

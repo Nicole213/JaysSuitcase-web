@@ -8,33 +8,54 @@ class AGVFlatAreaManager {
         this.totalPages = 1;
         this.searchParams = {};
         this.editingId = null;
-        
+        this.channelOptions = [];
+        this.locationOptions = [];
+
         this.init();
         this.loadMockData();
     }
 
     init() {
+        this.initOptions();
         this.bindEvents();
-        this.loadStationOptions();
+    }
+
+    initOptions() {
+        this.channelOptions = [
+            { id: 'CH001', name: 'AGV平库通道001' },
+            { id: 'CH002', name: 'AGV平库通道002' },
+            { id: 'CH003', name: 'AGV平库通道003' },
+            { id: 'CH004', name: 'AGV平库通道004' },
+            { id: 'CH005', name: 'AGV平库通道005' },
+            { id: 'CH006', name: 'AGV平库通道006' },
+            { id: 'CH007', name: 'AGV平库通道007' },
+            { id: 'CH008', name: 'AGV平库通道008' }
+        ];
+
+        this.locationOptions = [
+            { id: 1, areaCode: 'AREA001', locationCode: 'LOC001-01-01', channelId: 'CH001', channelName: 'AGV平库通道001', currentStatus: '有货', enableStatus: '启用', remark: '主入库位' },
+            { id: 2, areaCode: 'AREA001', locationCode: 'LOC001-01-02', channelId: 'CH002', channelName: 'AGV平库通道002', currentStatus: '空库位', enableStatus: '启用', remark: '待分配' },
+            { id: 3, areaCode: 'AREA001', locationCode: 'LOC001-01-03', channelId: 'CH002', channelName: 'AGV平库通道002', currentStatus: '已分配', enableStatus: '启用', remark: '待上架' },
+            { id: 4, areaCode: 'AREA002', locationCode: 'LOC002-01-01', channelId: 'CH003', channelName: 'AGV平库通道003', currentStatus: '有货', enableStatus: '启用', remark: '高频出库位' },
+            { id: 5, areaCode: 'AREA002', locationCode: 'LOC002-01-02', channelId: 'CH004', channelName: 'AGV平库通道004', currentStatus: '空托', enableStatus: '启用', remark: '空托缓存' },
+            { id: 6, areaCode: 'AREA003', locationCode: 'LOC003-01-01', channelId: 'CH005', channelName: 'AGV平库通道005', currentStatus: '空库位', enableStatus: '禁用', remark: '维护中' },
+            { id: 7, areaCode: 'AREA004', locationCode: 'LOC004-01-01', channelId: 'CH006', channelName: 'AGV平库通道006', currentStatus: '有货', enableStatus: '启用', remark: '成品暂存' }
+        ];
     }
 
     bindEvents() {
-        // 查询按钮
         document.getElementById('searchBtn').addEventListener('click', () => {
             this.search();
         });
 
-        // 重置按钮
         document.getElementById('resetBtn').addEventListener('click', () => {
             this.resetSearch();
         });
 
-        // 新增按钮
         document.getElementById('addBtn').addEventListener('click', () => {
             this.showAddModal();
         });
 
-        // 弹窗关闭
         document.getElementById('closeModal').addEventListener('click', () => {
             this.hideModal();
         });
@@ -43,12 +64,10 @@ class AGVFlatAreaManager {
             this.hideModal();
         });
 
-        // 保存按钮
         document.getElementById('saveBtn').addEventListener('click', () => {
             this.saveAgvArea();
         });
 
-        // 分页按钮
         document.getElementById('prevPage').addEventListener('click', () => {
             if (this.currentPage > 1) {
                 this.goToPage(this.currentPage - 1);
@@ -61,14 +80,12 @@ class AGVFlatAreaManager {
             }
         });
 
-        // 点击弹窗外部关闭
         document.getElementById('agvAreaModal').addEventListener('click', (e) => {
             if (e.target.id === 'agvAreaModal') {
                 this.hideModal();
             }
         });
 
-        // 回车搜索
         document.getElementById('searchCode').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 this.search();
@@ -80,88 +97,66 @@ class AGVFlatAreaManager {
                 this.search();
             }
         });
-    }
 
-    // 加载库台选项
-    loadStationOptions() {
-        const stationSelect = document.getElementById('boundStation');
-        const mockStations = [
-            { id: 'ST001', name: '库台001' },
-            { id: 'ST002', name: '库台002' },
-            { id: 'ST003', name: '库台003' },
-            { id: 'ST004', name: '库台004' },
-            { id: 'ST005', name: '库台005' }
-        ];
-
-        mockStations.forEach(station => {
-            const option = document.createElement('option');
-            option.value = station.id;
-            option.textContent = station.name;
-            stationSelect.appendChild(option);
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.multi-select')) {
+                document.querySelectorAll('.multi-select').forEach(select => {
+                    select.classList.remove('active');
+                });
+            }
         });
     }
 
-    // 加载模拟数据
     loadMockData() {
         this.mockData = [
             {
                 id: 1,
-                aisleCode: 'AGV001',
-                aisleName: 'AGV平库巷道001',
-                locationStructure: '单深',
-                boundStation: 'ST001',
-                boundStationName: '库台001',
-                boundRow: 'R001',
+                areaCode: 'AREA001',
+                areaName: 'AGV平库库区001',
+                relatedChannels: ['CH001', 'CH002'],
+                relatedChannelNames: ['AGV平库通道001', 'AGV平库通道002'],
                 status: '启用',
-                remark: 'AGV平库主要巷道',
+                remark: '主作业库区',
                 createTime: '2024-01-15 10:30:00'
             },
             {
                 id: 2,
-                aisleCode: 'AGV002',
-                aisleName: 'AGV平库巷道002',
-                locationStructure: '双深',
-                boundStation: 'ST002',
-                boundStationName: '库台002',
-                boundRow: 'R002',
+                areaCode: 'AREA002',
+                areaName: 'AGV平库库区002',
+                relatedChannels: ['CH003', 'CH004'],
+                relatedChannelNames: ['AGV平库通道003', 'AGV平库通道004'],
                 status: '启用',
-                remark: '双深位存储巷道',
+                remark: '成品出库缓冲区',
                 createTime: '2024-01-16 14:20:00'
             },
             {
                 id: 3,
-                aisleCode: 'AGV003',
-                aisleName: 'AGV平库巷道003',
-                locationStructure: '单深',
-                boundStation: 'ST003',
-                boundStationName: '库台003',
-                boundRow: 'R003',
+                areaCode: 'AREA003',
+                areaName: 'AGV平库库区003',
+                relatedChannels: ['CH005'],
+                relatedChannelNames: ['AGV平库通道005'],
                 status: '禁用',
-                remark: '维护中',
+                remark: '维护停用库区',
                 createTime: '2024-01-17 09:15:00'
             },
             {
                 id: 4,
-                aisleCode: 'AGV004',
-                aisleName: 'AGV平库巷道004',
-                locationStructure: '双深',
-                boundStation: 'ST004',
-                boundStationName: '库台004',
-                boundRow: 'R004',
+                areaCode: 'AREA004',
+                areaName: 'AGV平库库区004',
+                relatedChannels: ['CH006'],
+                relatedChannelNames: ['AGV平库通道006'],
                 status: '启用',
-                remark: '高频使用巷道',
+                remark: '高频周转库区',
                 createTime: '2024-01-18 16:45:00'
             },
             {
                 id: 5,
-                aisleCode: 'AGV005',
-                aisleName: 'AGV平库巷道005',
-                locationStructure: '单深',
-                boundStation: 'ST005',
-                boundStationName: '库台005',
-                boundRow: 'R005',
+                areaCode: 'AREA005',
+                areaName: 'AGV平库库区005',
+                relatedChannels: [],
+                relatedChannelNames: [],
                 status: '启用',
-                remark: '备用巷道',
+                remark: '预留扩展库区',
                 createTime: '2024-01-19 11:30:00'
             }
         ];
@@ -169,7 +164,6 @@ class AGVFlatAreaManager {
         this.loadData();
     }
 
-    // 搜索
     search() {
         const searchCode = document.getElementById('searchCode').value.trim();
         const searchName = document.getElementById('searchName').value.trim();
@@ -185,7 +179,6 @@ class AGVFlatAreaManager {
         this.loadData();
     }
 
-    // 重置搜索
     resetSearch() {
         document.getElementById('searchCode').value = '';
         document.getElementById('searchName').value = '';
@@ -195,50 +188,51 @@ class AGVFlatAreaManager {
         this.loadData();
     }
 
-    // 加载数据
     loadData() {
         let filteredData = [...this.mockData];
 
-        // 应用搜索条件
         if (this.searchParams.searchCode) {
-            filteredData = filteredData.filter(item => 
-                item.aisleCode.toLowerCase().includes(this.searchParams.searchCode.toLowerCase())
+            filteredData = filteredData.filter(item =>
+                item.areaCode.toLowerCase().includes(this.searchParams.searchCode.toLowerCase())
             );
         }
 
         if (this.searchParams.searchName) {
-            filteredData = filteredData.filter(item => 
-                item.aisleName.toLowerCase().includes(this.searchParams.searchName.toLowerCase())
+            filteredData = filteredData.filter(item =>
+                item.areaName.toLowerCase().includes(this.searchParams.searchName.toLowerCase())
             );
         }
 
         if (this.searchParams.statusFilter) {
-            filteredData = filteredData.filter(item => 
+            filteredData = filteredData.filter(item =>
                 item.status === this.searchParams.statusFilter
             );
         }
 
-        // 计算分页
         this.totalCount = filteredData.length;
-        this.totalPages = Math.ceil(this.totalCount / this.pageSize);
-        
+        this.totalPages = Math.ceil(this.totalCount / this.pageSize) || 1;
+
         const startIndex = (this.currentPage - 1) * this.pageSize;
         const endIndex = startIndex + this.pageSize;
         const pageData = filteredData.slice(startIndex, endIndex);
+
+        if (this.currentPage > this.totalPages) {
+            this.currentPage = this.totalPages;
+            return this.loadData();
+        }
 
         this.renderTable(pageData);
         this.updatePagination();
     }
 
-    // 渲染表格
     renderTable(data) {
         const tbody = document.getElementById('agvAreaTableBody');
         tbody.innerHTML = '';
 
-        if (data.length === 0) {
+        if (!data.length) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9">
+                    <td colspan="6">
                         <div class="empty-state">
                             <div class="empty-icon">📦</div>
                             <div class="empty-text">暂无数据</div>
@@ -253,11 +247,8 @@ class AGVFlatAreaManager {
         data.forEach(item => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${item.aisleCode}</td>
-                <td>${item.aisleName}</td>
-                <td>${item.locationStructure}</td>
-                <td>${item.boundStationName || '-'}</td>
-                <td>${item.boundRow || '-'}</td>
+                <td>${item.areaCode}</td>
+                <td>${item.areaName}</td>
                 <td>
                     <span class="status-badge ${item.status === '启用' ? 'enabled' : 'disabled'}">
                         ${item.status}
@@ -267,14 +258,10 @@ class AGVFlatAreaManager {
                 <td>${item.createTime}</td>
                 <td>
                     <div class="action-btns">
-                        <button class="edit-btn" onclick="agvFlatAreaManager.editAgvArea(${item.id})">
-                            编辑
-                        </button>
-                        <button class="delete-btn" onclick="agvFlatAreaManager.deleteAgvArea(${item.id})">
-                            删除
-                        </button>
-                        <button class="${item.status === '启用' ? 'disable-btn' : 'enable-btn'}" 
-                                onclick="agvFlatAreaManager.toggleStatus(${item.id})">
+                        <button class="action-link" onclick="agvFlatAreaManager.editAgvArea(${item.id})">编辑</button>
+                        <button class="action-link danger" onclick="agvFlatAreaManager.deleteAgvArea(${item.id})">删除</button>
+                        <button class="action-link ${item.status === '启用' ? 'warning' : 'success'}"
+                            onclick="agvFlatAreaManager.toggleStatus(${item.id})">
                             ${item.status === '启用' ? '禁用' : '启用'}
                         </button>
                     </div>
@@ -284,24 +271,21 @@ class AGVFlatAreaManager {
         });
     }
 
-    // 更新分页信息
     updatePagination() {
         document.getElementById('currentPage').textContent = this.currentPage;
         document.getElementById('totalPages').textContent = this.totalPages;
-
-        // 更新分页按钮状态
         document.getElementById('prevPage').disabled = this.currentPage === 1;
-        document.getElementById('nextPage').disabled = this.currentPage === this.totalPages || this.totalPages === 0;
+        document.getElementById('nextPage').disabled = this.currentPage === this.totalPages || this.totalCount === 0;
     }
 
-    // 跳转页面
     goToPage(page) {
-        if (page < 1 || page > this.totalPages) return;
+        if (page < 1 || page > this.totalPages) {
+            return;
+        }
         this.currentPage = page;
         this.loadData();
     }
 
-    // 显示新增弹窗
     showAddModal() {
         this.editingId = null;
         document.getElementById('modalTitle').textContent = '新增AGV平库库区';
@@ -309,64 +293,87 @@ class AGVFlatAreaManager {
         this.showModal();
     }
 
-    // 编辑AGV平库库区
     editAgvArea(id) {
-        const item = this.mockData.find(d => d.id === id);
-        if (!item) return;
+        const item = this.mockData.find(data => data.id === id);
+        if (!item) {
+            return;
+        }
 
         this.editingId = id;
         document.getElementById('modalTitle').textContent = '编辑AGV平库库区';
-        
-        // 填充表单
-        document.getElementById('aisleCode').value = item.aisleCode;
-        document.getElementById('aisleName').value = item.aisleName;
-        document.getElementById('locationStructure').value = item.locationStructure;
-        document.getElementById('boundStation').value = item.boundStation || '';
-        document.getElementById('boundRow').value = item.boundRow || '';
+        document.getElementById('areaCode').value = item.areaCode;
+        document.getElementById('areaCode').disabled = true;
+        document.getElementById('areaName').value = item.areaName;
         document.getElementById('status').value = item.status;
         document.getElementById('remark').value = item.remark || '';
-
         this.showModal();
     }
 
-    // 删除AGV平库库区
     deleteAgvArea(id) {
-        const item = this.mockData.find(d => d.id === id);
-        if (!item) return;
+        const item = this.mockData.find(data => data.id === id);
+        if (!item) {
+            return;
+        }
 
-        if (confirm(`确定要删除AGV平库库区"${item.aisleName}"吗？`)) {
-            const index = this.mockData.findIndex(d => d.id === id);
-            if (index > -1) {
-                this.mockData.splice(index, 1);
-                this.loadData();
-                this.showMessage('删除成功', 'success');
+        const hasRelatedChannels = item.relatedChannels.length > 0;
+        const hasRelatedLocations = this.locationOptions.some(location => location.areaCode === item.areaCode);
+
+        if (hasRelatedChannels || hasRelatedLocations) {
+            this.showAlertDialog(
+                '删除提示',
+                '请先删除关联通道/库位'
+            );
+            return;
+        }
+
+        this.showConfirmDialog(
+            '确认删除库区',
+            `确定要删除库区"${item.areaName}"吗？\n删除后将无法恢复。`,
+            () => {
+                const index = this.mockData.findIndex(data => data.id === id);
+                if (index > -1) {
+                    this.mockData.splice(index, 1);
+                    this.adjustCurrentPageAfterMutation();
+                    this.loadData();
+                    this.showMessage('删除成功', 'success');
+                }
             }
-        }
+        );
     }
 
-    // 切换状态
     toggleStatus(id) {
-        const item = this.mockData.find(d => d.id === id);
-        if (!item) return;
-
-        const newStatus = item.status === '启用' ? '禁用' : '启用';
-        const action = newStatus === '启用' ? '启用' : '禁用';
-
-        if (confirm(`确定要${action}AGV平库库区"${item.aisleName}"吗？`)) {
-            item.status = newStatus;
-            this.loadData();
-            this.showMessage(`${action}成功`, 'success');
+        const item = this.mockData.find(data => data.id === id);
+        if (!item) {
+            return;
         }
+
+        if (item.status === '启用') {
+            const confirmed = confirm('禁用后AGV将不再执行该库区的出入库任务，是否确认？');
+            if (!confirmed) {
+                return;
+            }
+            item.status = '禁用';
+            this.loadData();
+            this.showMessage('禁用成功', 'success');
+            return;
+        }
+
+        const confirmed = confirm(`确定要启用库区"${item.areaName}"吗？启用后将恢复正常任务分配。`);
+        if (!confirmed) {
+            return;
+        }
+
+        item.status = '启用';
+        this.loadData();
+        this.showMessage('启用成功', 'success');
     }
 
-    // 显示弹窗
     showModal() {
         const modal = document.getElementById('agvAreaModal');
         modal.style.display = 'flex';
         modal.classList.add('active');
     }
 
-    // 隐藏弹窗
     hideModal() {
         const modal = document.getElementById('agvAreaModal');
         modal.style.display = 'none';
@@ -374,58 +381,97 @@ class AGVFlatAreaManager {
         this.resetForm();
     }
 
-    // 重置表单
     resetForm() {
         document.getElementById('agvAreaForm').reset();
+        document.getElementById('areaCode').disabled = false;
     }
 
-    // 保存AGV平库库区
+    showConfirmDialog(title, message, onConfirm) {
+        const dialog = document.createElement('div');
+        dialog.className = 'confirm-dialog active';
+        dialog.innerHTML = `
+            <div class="confirm-content">
+                <div class="confirm-title">${title}</div>
+                <div class="confirm-message">${message.replace(/\n/g, '<br>')}</div>
+                <div class="confirm-actions">
+                    <button class="confirm-btn secondary" id="confirmCancel">取消</button>
+                    <button class="confirm-btn primary" id="confirmOk">确认</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        dialog.querySelector('#confirmCancel').addEventListener('click', () => {
+            document.body.removeChild(dialog);
+        });
+
+        dialog.querySelector('#confirmOk').addEventListener('click', () => {
+            document.body.removeChild(dialog);
+            onConfirm();
+        });
+
+        dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+                document.body.removeChild(dialog);
+            }
+        });
+    }
+
+    showAlertDialog(title, message) {
+        const dialog = document.createElement('div');
+        dialog.className = 'confirm-dialog active';
+        dialog.innerHTML = `
+            <div class="confirm-content">
+                <div class="confirm-title">${title}</div>
+                <div class="confirm-message">${message.replace(/\n/g, '<br>')}</div>
+                <div class="confirm-actions">
+                    <button class="confirm-btn info" id="alertOk">确定</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        dialog.querySelector('#alertOk').addEventListener('click', () => {
+            document.body.removeChild(dialog);
+        });
+
+        dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+                document.body.removeChild(dialog);
+            }
+        });
+    }
+
     saveAgvArea() {
-        // 获取表单数据
-        const aisleCode = document.getElementById('aisleCode').value.trim();
-        const aisleName = document.getElementById('aisleName').value.trim();
-        const locationStructure = document.getElementById('locationStructure').value;
-        const boundStation = document.getElementById('boundStation').value;
-        const boundRow = document.getElementById('boundRow').value.trim();
+        const areaCode = document.getElementById('areaCode').value.trim();
+        const areaName = document.getElementById('areaName').value.trim();
         const status = document.getElementById('status').value;
         const remark = document.getElementById('remark').value.trim();
 
-        // 验证必填字段
-        if (!aisleCode) {
-            this.showMessage('请输入巷道编码', 'error');
+        if (!areaCode) {
+            this.showMessage('请输入库区编码', 'error');
             return;
         }
 
-        if (!aisleName) {
-            this.showMessage('请输入巷道名称', 'error');
+        if (!areaName) {
+            this.showMessage('请输入库区名称', 'error');
             return;
         }
 
-        if (!locationStructure) {
-            this.showMessage('请选择库位结构', 'error');
-            return;
-        }
-
-        // 检查巷道编码是否重复
-        const existingItem = this.mockData.find(item => 
-            item.aisleCode === aisleCode && item.id !== this.editingId
+        const existingItem = this.mockData.find(item =>
+            item.areaCode === areaCode && item.id !== this.editingId
         );
 
         if (existingItem) {
-            this.showMessage('巷道编码已存在', 'error');
+            this.showMessage('库区编码已存在', 'error');
             return;
         }
 
-        const boundStationName = boundStation ? 
-            document.querySelector(`#boundStation option[value="${boundStation}"]`).textContent : '';
-
-        const agvAreaData = {
-            aisleCode,
-            aisleName,
-            locationStructure,
-            boundStation: boundStation || null,
-            boundStationName,
-            boundRow: boundRow || null,
+        const areaData = {
+            areaCode,
+            areaName,
             status,
             remark: remark || null,
             createTime: new Date().toLocaleString('zh-CN', {
@@ -439,16 +485,21 @@ class AGVFlatAreaManager {
         };
 
         if (this.editingId) {
-            // 编辑
-            const index = this.mockData.findIndex(d => d.id === this.editingId);
+            const index = this.mockData.findIndex(item => item.id === this.editingId);
             if (index > -1) {
-                this.mockData[index] = { ...this.mockData[index], ...agvAreaData };
+                areaData.createTime = this.mockData[index].createTime;
+                areaData.relatedChannels = [...this.mockData[index].relatedChannels];
+                areaData.relatedChannelNames = [...this.mockData[index].relatedChannelNames];
+                this.mockData[index] = { ...this.mockData[index], ...areaData };
                 this.showMessage('修改成功', 'success');
             }
         } else {
-            // 新增
-            const newId = Math.max(...this.mockData.map(d => d.id)) + 1;
-            this.mockData.push({ id: newId, ...agvAreaData });
+            const newId = this.mockData.length
+                ? Math.max(...this.mockData.map(item => item.id)) + 1
+                : 1;
+            areaData.relatedChannels = [];
+            areaData.relatedChannelNames = [];
+            this.mockData.push({ id: newId, ...areaData });
             this.showMessage('新增成功', 'success');
         }
 
@@ -456,20 +507,22 @@ class AGVFlatAreaManager {
         this.loadData();
     }
 
-    // 显示消息
+    adjustCurrentPageAfterMutation() {
+        const remainingPages = Math.ceil((this.totalCount - 1) / this.pageSize) || 1;
+        if (this.currentPage > remainingPages) {
+            this.currentPage = remainingPages;
+        }
+    }
+
     showMessage(message, type = 'info') {
-        // 移除已存在的消息
         const existingMessage = document.querySelector('.toast-message');
         if (existingMessage) {
             existingMessage.remove();
         }
 
-        // 创建消息元素
         const messageEl = document.createElement('div');
         messageEl.className = `toast-message toast-${type}`;
         messageEl.textContent = message;
-        
-        // 设置样式
         messageEl.style.cssText = `
             position: fixed;
             top: 20px;
@@ -483,7 +536,6 @@ class AGVFlatAreaManager {
             animation: slideInRight 0.3s ease;
         `;
 
-        // 设置背景色
         switch (type) {
             case 'success':
                 messageEl.style.backgroundColor = '#52c41a';
@@ -501,7 +553,6 @@ class AGVFlatAreaManager {
 
         document.body.appendChild(messageEl);
 
-        // 3秒后自动移除
         setTimeout(() => {
             messageEl.style.animation = 'slideOutRight 0.3s ease';
             setTimeout(() => {
@@ -513,7 +564,6 @@ class AGVFlatAreaManager {
     }
 }
 
-// 添加动画样式
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideInRight {
@@ -526,7 +576,7 @@ style.textContent = `
             opacity: 1;
         }
     }
-    
+
     @keyframes slideOutRight {
         from {
             transform: translateX(0);
@@ -540,7 +590,6 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// 初始化管理器
 let agvFlatAreaManager;
 document.addEventListener('DOMContentLoaded', () => {
     agvFlatAreaManager = new AGVFlatAreaManager();

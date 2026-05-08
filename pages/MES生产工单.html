@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MES生产工单</title>
+    <link rel="stylesheet" href="../styles/pages.css">
+    <link rel="stylesheet" href="../styles/mes-work-order.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <h1>MES生产工单</h1>
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>工单编号：</label>
+                    <input type="text" class="filter-input" id="searchWorkOrderNo" placeholder="请输入工单编号">
+                </div>
+                <div class="filter-group">
+                    <label>工单状态：</label>
+                    <select class="filter-select" id="searchStatus">
+                        <option value="">全部</option>
+                        <option value="待执行">待执行</option>
+                        <option value="执行中">执行中</option>
+                        <option value="已完成">已完成</option>
+                        <option value="已取消">已取消</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>同步时间：</label>
+                    <input type="date" class="filter-input-date" id="searchSyncStart">
+                    <span class="date-separator">至</span>
+                    <input type="date" class="filter-input-date" id="searchSyncEnd">
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>待包装成品信息：</label>
+                    <input type="text" class="filter-input wide" id="searchProductInfo" placeholder="请输入物料编码或名称">
+                </div>
+                <div class="filter-group">
+                    <label>执行人员：</label>
+                    <input type="text" class="filter-input" id="searchExecutor" placeholder="请输入执行人员">
+                </div>
+                <div class="filter-group">
+                    <label>是否完成入库：</label>
+                    <select class="filter-select" id="searchInboundCompleted">
+                        <option value="">全部</option>
+                        <option value="是">是</option>
+                        <option value="否">否</option>
+                    </select>
+                </div>
+                <button class="search-btn" id="searchBtn">查询</button>
+                <button class="reset-btn" id="resetBtn">重置</button>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th width="170">工单编号</th>
+                        <th width="100">工单状态</th>
+                        <th width="260">待包装成品信息</th>
+                        <th width="110">计划包装数量</th>
+                        <th width="110">已包装数量</th>
+                        <th width="160">同步时间</th>
+                        <th width="110">执行人员</th>
+                        <th width="160">执行开始时间</th>
+                        <th width="160">执行完成时间</th>
+                        <th width="130">待包装成品出库状态</th>
+                        <th width="120">成品入库状态</th>
+                        <th width="240">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="workOrderTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button class="page-btn" id="prevPage">上一页</button>
+            <span class="page-info">第 <span id="currentPage">1</span> 页，共 <span id="totalPages">1</span> 页</span>
+            <button class="page-btn" id="nextPage">下一页</button>
+        </div>
+    </div>
+
+    <div class="modal" id="detailModal">
+        <div class="modal-content modal-content-wide">
+            <div class="modal-header">
+                <h3>工单详情</h3>
+                <span class="modal-close" id="closeDetailModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="detail-basic-section">
+                    <div class="detail-basic-title">基本信息</div>
+                    <div class="detail-basic-grid" id="detailSummary"></div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-header">
+                        <h4>待包装成品出库明细</h4>
+                    </div>
+                    <table class="detail-table">
+                        <thead>
+                            <tr>
+                                <th width="70">序号</th>
+                                <th width="120">容器编码</th>
+                                <th width="130">物料编码</th>
+                                <th width="150">物料名称</th>
+                                <th width="100">出库数量</th>
+                                <th width="110">库区编码</th>
+                                <th width="130">库位编码</th>
+                                <th width="100">状态</th>
+                                <th width="90">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingOutboundTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-header">
+                        <h4>包装辅材出库明细</h4>
+                    </div>
+                    <table class="detail-table">
+                        <thead>
+                            <tr>
+                                <th width="70">序号</th>
+                                <th width="120">容器编码</th>
+                                <th width="130">物料编码</th>
+                                <th width="150">物料名称</th>
+                                <th width="100">出库数量</th>
+                                <th width="110">库区编码</th>
+                                <th width="130">库位编码</th>
+                                <th width="100">状态</th>
+                                <th width="90">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="materialOutboundTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-header">
+                        <h4>成品入库明细</h4>
+                    </div>
+                    <table class="detail-table">
+                        <thead>
+                            <tr>
+                                <th width="70">序号</th>
+                                <th width="120">容器编码</th>
+                                <th width="130">物料编码</th>
+                                <th width="150">物料名称</th>
+                                <th width="100">入库数量</th>
+                                <th width="110">库区编码</th>
+                                <th width="130">库位编码</th>
+                                <th width="100">状态</th>
+                                <th width="90">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inboundTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="closeDetailBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="itemDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="itemDetailTitle">明细信息</h3>
+                <span class="modal-close" id="closeItemDetailModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="item-detail-grid" id="itemDetailContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="closeItemDetailBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/mes-work-order.js"></script>
+</body>
+</html>
