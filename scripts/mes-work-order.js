@@ -1,6 +1,10 @@
 // MES生产工单页面脚本
 
 class MESWorkOrderPage {
+    static PALLET_CAPACITY = 20;
+    static MAX_PENDING_OUTBOUND_TASKS = 2;
+    static SN_PREFIX = 'SN';
+
     constructor() {
         this.currentPage = 1;
         this.pageSize = 10;
@@ -17,7 +21,7 @@ class MESWorkOrderPage {
     }
 
     buildMockData() {
-        return [
+        const rawData = [
             {
                 id: 1,
                 workOrderNo: 'MES-WO-20240501-001',
@@ -56,8 +60,8 @@ class MESWorkOrderPage {
                 productInfos: [
                     { materialCode: 'CP-2024-003', materialName: '登机箱' }
                 ],
-                planQty: 260,
-                packedQty: 120,
+                planQty: 320,
+                packedQty: 100,
                 syncTime: '2024-05-01 09:30:00',
                 executor: '李四',
                 startTime: '2024-05-01 10:00:00',
@@ -65,17 +69,30 @@ class MESWorkOrderPage {
                 pendingOutboundStatus: '部分出库',
                 inboundStatus: '部分入库',
                 isPaused: false,
-                remark: '当前唯一执行中的工单',
-                pendingOutboundDetails: [
-                    { seq: 1, containerCode: 'TP-2011', materialCode: 'CP-2024-003', materialName: '登机箱', quantity: 260, areaCode: 'A02', locationCode: '1-2-1-1', status: '已出库', time: '2024-05-01 10:12:00', targetLocation: '包装工位03', type: '待包装成品出库明细' }
+                remark: '已包装100个，其中80个已入库、20个待入库；待包装成品出库任务最多预生成2条待出库记录',
+                detailScenario: [
+                    {
+                        materialCode: 'CP-2024-003',
+                        materialName: '登机箱',
+                        planQty: 320,
+                        outboundDoneQty: 100,
+                        packedQty: 100,
+                        inboundDoneQty: 80,
+                        outboundContainerCode: 'TP-2011',
+                        outboundAreaCode: 'A02',
+                        outboundLocationCode: '1-2-1-1',
+                        outboundTargetLocation: '包装工位03',
+                        outboundDoneTime: '2024-05-01 10:12:00',
+                        inboundContainerCode: 'IN-3011',
+                        inboundAreaCode: 'C02',
+                        inboundLocationCode: '3-2-1-1',
+                        inboundTargetLocation: '立库暂存位01',
+                        inboundDoneTime: '2024-05-01 13:20:00'
+                    }
                 ],
                 materialOutboundDetails: [
-                    { seq: 1, containerCode: 'FC-1011', materialCode: 'FC-2024-003', materialName: '保护套', quantity: 260, areaCode: 'B01', locationCode: '2-2-1-1', status: '已出库', time: '2024-05-01 10:08:00', targetLocation: '辅材工位02', type: '包装辅材出库明细' },
-                    { seq: 2, containerCode: 'FC-1012', materialCode: 'FC-2024-004', materialName: '吊牌', quantity: 260, areaCode: 'B01', locationCode: '2-2-2-1', status: '待出库', time: '-', targetLocation: '辅材工位02', type: '包装辅材出库明细' }
-                ],
-                inboundDetails: [
-                    { seq: 1, containerCode: 'IN-3011', materialCode: 'CP-2024-003', materialName: '登机箱', quantity: 120, areaCode: 'C02', locationCode: '3-2-1-1', status: '已入库', time: '2024-05-01 13:20:00', targetLocation: '立库暂存位01', type: '成品入库明细' },
-                    { seq: 2, containerCode: 'IN-3012', materialCode: 'CP-2024-003', materialName: '登机箱', quantity: 140, areaCode: 'C02', locationCode: '3-2-1-2', status: '待入库', time: '-', targetLocation: '立库暂存位02', type: '成品入库明细' }
+                    { seq: 1, containerCode: 'FC-1011', materialCode: 'FC-2024-003', materialName: '保护套', quantity: 320, areaCode: 'B01', locationCode: '2-2-1-1', status: '已出库', time: '2024-05-01 10:08:00', targetLocation: '辅材工位02', type: '包装辅材出库明细' },
+                    { seq: 2, containerCode: 'FC-1012', materialCode: 'FC-2024-004', materialName: '吊牌', quantity: 320, areaCode: 'B01', locationCode: '2-2-2-1', status: '待出库', time: '-', targetLocation: '辅材工位02', type: '包装辅材出库明细' }
                 ]
             },
             {
@@ -162,7 +179,274 @@ class MESWorkOrderPage {
                     { seq: 2, containerCode: 'IN-3042', materialCode: 'CP-2024-007', materialName: '硬壳化妆箱', quantity: 120, areaCode: 'C01', locationCode: '3-1-4-1', status: '待入库', time: '-', targetLocation: '成品缓存区04', type: '成品入库明细' }
                 ]
             }
-        ];
+        ].map((item) => this.normalizeStorageCodes(item));
+
+        return rawData.map((item) => this.normalizeWorkOrderDetails(item));
+    }
+
+    normalizeStorageCodes(item) {
+        const normalizeDetails = (details = []) => details.map((detail) => {
+            const originalAreaCode = detail.areaCode;
+
+            return {
+                ...detail,
+                areaCode: this.formatAreaCode(originalAreaCode),
+                locationCode: this.formatLocationCode(originalAreaCode, detail.locationCode)
+            };
+        });
+
+        const normalizeScenario = (scenario) => ({
+            ...scenario,
+            outboundAreaCode: this.formatAreaCode(scenario.outboundAreaCode),
+            outboundLocationCode: this.formatLocationCode(scenario.outboundAreaCode, scenario.outboundLocationCode),
+            inboundAreaCode: this.formatAreaCode(scenario.inboundAreaCode),
+            inboundLocationCode: this.formatLocationCode(scenario.inboundAreaCode, scenario.inboundLocationCode)
+        });
+
+        return {
+            ...item,
+            pendingOutboundDetails: normalizeDetails(item.pendingOutboundDetails),
+            materialOutboundDetails: normalizeDetails(item.materialOutboundDetails),
+            inboundDetails: normalizeDetails(item.inboundDetails),
+            detailScenario: item.detailScenario ? item.detailScenario.map((scenario) => normalizeScenario(scenario)) : item.detailScenario
+        };
+    }
+
+    normalizeWorkOrderDetails(item) {
+        const detailData = item.detailScenario
+            ? this.buildScenarioDetails(item.detailScenario)
+            : {
+                pendingOutboundDetails: this.expandDetailsToPallets(item.pendingOutboundDetails),
+                inboundDetails: this.expandDetailsToPallets(item.inboundDetails)
+            };
+
+        return {
+            ...item,
+            ...detailData,
+            pendingOutboundDetails: this.enrichDetailItems(this.limitPendingOutboundTasks(detailData.pendingOutboundDetails), 'outbound'),
+            materialOutboundDetails: this.enrichDetailItems(item.materialOutboundDetails, 'material'),
+            inboundDetails: this.enrichDetailItems(detailData.inboundDetails, 'inbound')
+        };
+    }
+
+    buildScenarioDetails(scenarios) {
+        return {
+            pendingOutboundDetails: this.buildScenarioRows(scenarios, 'outbound'),
+            inboundDetails: this.buildScenarioRows(scenarios, 'inbound')
+        };
+    }
+
+    buildScenarioRows(scenarios, category) {
+        let seq = 1;
+
+        return scenarios.flatMap((scenario) => {
+            const rows = category === 'outbound'
+                ? this.splitFlowRows({
+                    totalQty: scenario.planQty,
+                    doneQty: scenario.outboundDoneQty,
+                    containerCode: scenario.outboundContainerCode,
+                    materialCode: scenario.materialCode,
+                    materialName: scenario.materialName,
+                    areaCode: scenario.outboundAreaCode,
+                    locationCode: scenario.outboundLocationCode,
+                    doneTime: scenario.outboundDoneTime,
+                    pendingTime: '-',
+                    targetLocation: scenario.outboundTargetLocation,
+                    doneStatus: '已出库',
+                    pendingStatus: '待出库',
+                    type: '待包装成品出库明细'
+                })
+                : this.splitFlowRows({
+                    totalQty: scenario.packedQty,
+                    doneQty: scenario.inboundDoneQty,
+                    containerCode: scenario.inboundContainerCode,
+                    materialCode: scenario.materialCode,
+                    materialName: scenario.materialName,
+                    areaCode: scenario.inboundAreaCode,
+                    locationCode: scenario.inboundLocationCode,
+                    doneTime: scenario.inboundDoneTime,
+                    pendingTime: '-',
+                    targetLocation: scenario.inboundTargetLocation,
+                    doneStatus: '已入库',
+                    pendingStatus: '待入库',
+                    type: '成品入库明细'
+                });
+
+            return rows.map((row) => ({
+                ...row,
+                seq: seq++
+            }));
+        });
+    }
+
+    splitFlowRows(config) {
+        if (!config.totalQty) {
+            return [];
+        }
+
+        let remainingTotal = config.totalQty;
+        let remainingDone = config.doneQty;
+        let index = 0;
+        const rows = [];
+
+        while (remainingTotal > 0) {
+            const rowQty = Math.min(MESWorkOrderPage.PALLET_CAPACITY, remainingTotal);
+            const isDone = remainingDone >= rowQty;
+
+            rows.push({
+                containerCode: this.buildContainerCode(config.containerCode, index),
+                materialCode: config.materialCode,
+                materialName: config.materialName,
+                quantity: rowQty,
+                areaCode: config.areaCode,
+                locationCode: this.buildLocationCode(config.locationCode, index),
+                status: isDone ? config.doneStatus : config.pendingStatus,
+                time: isDone ? config.doneTime : config.pendingTime,
+                targetLocation: config.targetLocation,
+                type: config.type
+            });
+
+            remainingTotal -= rowQty;
+            remainingDone = Math.max(0, remainingDone - rowQty);
+            index += 1;
+        }
+
+        return rows;
+    }
+
+    expandDetailsToPallets(details) {
+        let seq = 1;
+
+        return details.flatMap((detail) => {
+            const palletCount = Math.ceil(detail.quantity / MESWorkOrderPage.PALLET_CAPACITY);
+
+            return Array.from({ length: palletCount }, (_, index) => {
+                const remainingQty = detail.quantity - index * MESWorkOrderPage.PALLET_CAPACITY;
+
+                return {
+                    ...detail,
+                    seq: seq++,
+                    containerCode: this.buildContainerCode(detail.containerCode, index),
+                    locationCode: this.buildLocationCode(detail.locationCode, index),
+                    quantity: Math.min(MESWorkOrderPage.PALLET_CAPACITY, remainingQty)
+                };
+            });
+        });
+    }
+
+    limitPendingOutboundTasks(details) {
+        let pendingCount = 0;
+
+        return details.filter((detail) => {
+            if (detail.status !== '待出库') {
+                return true;
+            }
+
+            if (pendingCount >= MESWorkOrderPage.MAX_PENDING_OUTBOUND_TASKS) {
+                return false;
+            }
+
+            pendingCount += 1;
+            return true;
+        });
+    }
+
+    enrichDetailItems(details, category) {
+        return details.map((detail, index) => ({
+            ...detail,
+            itemDetails: this.buildItemDetails(detail, category, index)
+        }));
+    }
+
+    buildItemDetails(detail, category, detailIndex) {
+        return Array.from({ length: detail.quantity }, (_, itemIndex) => ({
+            seq: itemIndex + 1,
+            snCode: this.buildSnCode(detail, category, detailIndex, itemIndex),
+            materialCode: detail.materialCode,
+            materialName: detail.materialName,
+            containerCode: detail.containerCode,
+            status: detail.status
+        }));
+    }
+
+    buildSnCode(detail, category, detailIndex, itemIndex) {
+        const categoryCodeMap = {
+            outbound: 'CK',
+            inbound: 'RK',
+            material: 'FC'
+        };
+        const normalizedMaterialCode = detail.materialCode.replace(/[^A-Za-z0-9]/g, '');
+        const categoryCode = categoryCodeMap[category] || 'WL';
+        const detailSegment = String(detailIndex + 1).padStart(3, '0');
+        const itemSegment = String(itemIndex + 1).padStart(3, '0');
+
+        return `${MESWorkOrderPage.SN_PREFIX}-${normalizedMaterialCode}-${categoryCode}-${detailSegment}${itemSegment}`;
+    }
+
+    formatAreaCode(areaCode) {
+        const matchedPkArea = String(areaCode).match(/^PK(\d{3})$/);
+        if (matchedPkArea) {
+            return `PK${matchedPkArea[1]}`;
+        }
+
+        const matchedLegacyArea = String(areaCode).match(/^([A-Z])(\d{2})$/);
+        if (matchedLegacyArea) {
+            const prefix = matchedLegacyArea[1];
+            const value = Number(matchedLegacyArea[2]);
+            const prefixOffsetMap = {
+                A: 0,
+                B: 4,
+                C: 8
+            };
+            const offset = prefixOffsetMap[prefix] ?? 0;
+
+            return `PK${String(offset + value).padStart(3, '0')}`;
+        }
+
+        return `PK${String(areaCode).replace(/\D/g, '').padStart(3, '0').slice(-3) || '001'}`;
+    }
+
+    formatLocationCode(areaCode, locationCode) {
+        const formattedAreaCode = this.formatAreaCode(areaCode);
+        const matchedPkLocation = String(locationCode).match(/^PK\d{3}-(\d{2})-(\d{3})$/);
+        if (matchedPkLocation) {
+            return `${formattedAreaCode}-${matchedPkLocation[1]}-${matchedPkLocation[2]}`;
+        }
+
+        const segments = String(locationCode).split('-').map((segment) => Number(segment));
+        if (segments.length >= 4 && segments.every((segment) => !Number.isNaN(segment))) {
+            const lane = String(segments[1]).padStart(2, '0');
+            const slot = String((segments[2] - 1) * 10 + segments[3]).padStart(3, '0');
+
+            return `${formattedAreaCode}-${lane}-${slot}`;
+        }
+
+        return `${formattedAreaCode}-01-001`;
+    }
+
+    buildContainerCode(containerCode, index) {
+        return `${containerCode}-${String(index + 1).padStart(2, '0')}`;
+    }
+
+    buildLocationCode(locationCode, index) {
+        const matchedPkLocation = String(locationCode).match(/^(PK\d{3})-(\d{2})-(\d{3})$/);
+        if (matchedPkLocation) {
+            const nextSlot = String(Number(matchedPkLocation[3]) + index).padStart(3, '0');
+            return `${matchedPkLocation[1]}-${matchedPkLocation[2]}-${nextSlot}`;
+        }
+
+        const segments = String(locationCode).split('-');
+        if (!segments.length) {
+            return locationCode;
+        }
+
+        const lastSegment = Number(segments[segments.length - 1]);
+        if (Number.isNaN(lastSegment)) {
+            return `${locationCode}-${index + 1}`;
+        }
+
+        segments[segments.length - 1] = String(lastSegment + index);
+        return segments.join('-');
     }
 
     bindEvents() {
@@ -527,15 +811,15 @@ class MESWorkOrderPage {
                 <span class="detail-basic-label">成品入库状态：</span>
                 <span class="detail-basic-value">${item.inboundStatus}</span>
             </div>
-            <div class="detail-basic-item">
-                <span class="detail-basic-label">备注：</span>
-                <span class="detail-basic-value">${item.remark || '-'}</span>
-            </div>
         `;
 
-        this.renderDetailRows('pendingOutboundTableBody', item.pendingOutboundDetails, 'outbound');
-        this.renderDetailRows('materialOutboundTableBody', item.materialOutboundDetails, 'material');
-        this.renderDetailRows('inboundTableBody', item.inboundDetails, 'inbound');
+        const pendingOutboundDetails = item.status === '已取消' ? [] : item.pendingOutboundDetails;
+        const materialOutboundDetails = item.status === '已取消' ? [] : item.materialOutboundDetails;
+        const inboundDetails = ['待执行', '已取消'].includes(item.status) ? [] : item.inboundDetails;
+
+        this.renderDetailRows('pendingOutboundTableBody', pendingOutboundDetails, 'outbound');
+        this.renderDetailRows('materialOutboundTableBody', materialOutboundDetails, 'material');
+        this.renderDetailRows('inboundTableBody', inboundDetails, 'inbound');
 
         const modal = document.getElementById('detailModal');
         modal.style.display = 'flex';
@@ -547,7 +831,7 @@ class MESWorkOrderPage {
         if (!rows.length) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="detail-empty">暂无明细数据</td>
+                    <td colspan="10" class="detail-empty">暂无明细数据</td>
                 </tr>
             `;
             return;
@@ -562,6 +846,7 @@ class MESWorkOrderPage {
                 <td>${row.quantity}</td>
                 <td>${row.areaCode}</td>
                 <td>${row.locationCode}</td>
+                <td>${row.time}</td>
                 <td><span class="detail-status-badge ${row.status.includes('已') ? 'done' : 'pending'}">${row.status}</span></td>
                 <td><button class="inline-link" data-category="${category}" data-seq="${row.seq}">查看</button></td>
             </tr>
@@ -579,6 +864,7 @@ class MESWorkOrderPage {
         if (!item) {
             return;
         }
+        const itemDetailContent = document.getElementById('itemDetailContent');
 
         const map = {
             outbound: item.pendingOutboundDetails,
@@ -590,51 +876,137 @@ class MESWorkOrderPage {
             return;
         }
 
+        if (category === 'outbound' || category === 'inbound') {
+            this.showPalletDetail(detail, category);
+            return;
+        }
+
+        itemDetailContent.className = 'item-detail-content';
+
         const quantityLabel = category === 'inbound' ? '入库数量' : '出库数量';
         const timeLabel = category === 'inbound' ? '入库时间' : '出库时间';
         const locationLabel = category === 'inbound' ? '入库位置' : '出库位置';
 
         document.getElementById('itemDetailTitle').textContent = detail.type;
-        document.getElementById('itemDetailContent').innerHTML = `
-            <div class="item-detail-card">
-                <span class="item-detail-label">序号</span>
-                <span class="item-detail-value">${detail.seq}</span>
+        itemDetailContent.innerHTML = `
+            <div class="pallet-basic-section">
+                <div class="pallet-basic-title">基本信息</div>
+                <div class="pallet-basic-list">
+                    <div class="pallet-basic-item">
+                        <span class="pallet-basic-label">容器编码：</span>
+                        <span class="pallet-basic-value">${detail.containerCode}</span>
+                    </div>
+                    <div class="pallet-basic-item">
+                        <span class="pallet-basic-label">物料编码：</span>
+                        <span class="pallet-basic-value">${detail.materialCode}</span>
+                    </div>
+                    <div class="pallet-basic-item">
+                        <span class="pallet-basic-label">物料名称：</span>
+                        <span class="pallet-basic-value">${detail.materialName}</span>
+                    </div>
+                    <div class="pallet-basic-item">
+                        <span class="pallet-basic-label">${quantityLabel}：</span>
+                        <span class="pallet-basic-value">${detail.quantity}</span>
+                    </div>
+                    <div class="pallet-basic-item">
+                        <span class="pallet-basic-label">库区编码：</span>
+                        <span class="pallet-basic-value">${detail.areaCode}</span>
+                    </div>
+                    <div class="pallet-basic-item">
+                        <span class="pallet-basic-label">库位编码：</span>
+                        <span class="pallet-basic-value">${detail.locationCode}</span>
+                    </div>
+                    <div class="pallet-basic-item">
+                        <span class="pallet-basic-label">状态：</span>
+                        <span class="pallet-basic-value">${detail.status}</span>
+                    </div>
+                    <div class="pallet-basic-item">
+                        <span class="pallet-basic-label">${timeLabel}：</span>
+                        <span class="pallet-basic-value">${detail.time}</span>
+                    </div>
+                </div>
             </div>
-            <div class="item-detail-card">
-                <span class="item-detail-label">容器编码</span>
-                <span class="item-detail-value">${detail.containerCode}</span>
+        `;
+
+        const modal = document.getElementById('itemDetailModal');
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+    }
+
+    showPalletDetail(detail, category) {
+        const quantityLabel = category === 'inbound' ? '入库数量' : '出库数量';
+        const timeLabel = category === 'inbound' ? '入库时间' : '出库时间';
+        const itemDetailContent = document.getElementById('itemDetailContent');
+
+        itemDetailContent.className = 'item-detail-content';
+
+        document.getElementById('itemDetailTitle').textContent = `${detail.type} - 托盘明细`;
+        itemDetailContent.innerHTML = `
+            <div class="item-detail-section">
+                <div class="pallet-basic-section">
+                    <div class="pallet-basic-title">基本信息</div>
+                    <div class="pallet-basic-list">
+                        <div class="pallet-basic-item">
+                            <span class="pallet-basic-label">容器编码：</span>
+                            <span class="pallet-basic-value">${detail.containerCode}</span>
+                        </div>
+                        <div class="pallet-basic-item">
+                            <span class="pallet-basic-label">物料编码：</span>
+                            <span class="pallet-basic-value">${detail.materialCode}</span>
+                        </div>
+                        <div class="pallet-basic-item">
+                            <span class="pallet-basic-label">物料名称：</span>
+                            <span class="pallet-basic-value">${detail.materialName}</span>
+                        </div>
+                        <div class="pallet-basic-item">
+                            <span class="pallet-basic-label">${quantityLabel}：</span>
+                            <span class="pallet-basic-value">${detail.quantity}</span>
+                        </div>
+                        <div class="pallet-basic-item">
+                            <span class="pallet-basic-label">库区编码：</span>
+                            <span class="pallet-basic-value">${detail.areaCode}</span>
+                        </div>
+                        <div class="pallet-basic-item">
+                            <span class="pallet-basic-label">库位编码：</span>
+                            <span class="pallet-basic-value">${detail.locationCode}</span>
+                        </div>
+                        <div class="pallet-basic-item">
+                            <span class="pallet-basic-label">状态：</span>
+                            <span class="pallet-basic-value">${detail.status}</span>
+                        </div>
+                        <div class="pallet-basic-item">
+                            <span class="pallet-basic-label">${timeLabel}：</span>
+                            <span class="pallet-basic-value">${detail.time}</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="item-detail-card">
-                <span class="item-detail-label">物料编码</span>
-                <span class="item-detail-value">${detail.materialCode}</span>
-            </div>
-            <div class="item-detail-card">
-                <span class="item-detail-label">物料名称</span>
-                <span class="item-detail-value">${detail.materialName}</span>
-            </div>
-            <div class="item-detail-card">
-                <span class="item-detail-label">${quantityLabel}</span>
-                <span class="item-detail-value">${detail.quantity}</span>
-            </div>
-            <div class="item-detail-card">
-                <span class="item-detail-label">库区编码</span>
-                <span class="item-detail-value">${detail.areaCode}</span>
-            </div>
-            <div class="item-detail-card">
-                <span class="item-detail-label">库位编码</span>
-                <span class="item-detail-value">${detail.locationCode}</span>
-            </div>
-            <div class="item-detail-card">
-                <span class="item-detail-label">状态</span>
-                <span class="item-detail-value">${detail.status}</span>
-            </div>
-            <div class="item-detail-card">
-                <span class="item-detail-label">${timeLabel}</span>
-                <span class="item-detail-value">${detail.time}</span>
-            </div>
-            <div class="item-detail-card full-width">
-                <span class="item-detail-label">${locationLabel}</span>
-                <span class="item-detail-value">${detail.targetLocation}</span>
+            <div class="item-detail-section">
+                <h4 class="item-detail-section-title">托盘内物料明细</h4>
+                <div class="item-detail-table-wrap">
+                    <table class="item-detail-table">
+                        <thead>
+                            <tr>
+                                <th width="80">序号</th>
+                                <th width="240">SN码</th>
+                                <th width="160">物料编码</th>
+                                <th width="180">物料名称</th>
+                                <th width="100">状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${detail.itemDetails.map((item) => `
+                                <tr>
+                                    <td>${item.seq}</td>
+                                    <td>${item.snCode}</td>
+                                    <td>${item.materialCode}</td>
+                                    <td>${item.materialName}</td>
+                                    <td>${item.status}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         `;
 

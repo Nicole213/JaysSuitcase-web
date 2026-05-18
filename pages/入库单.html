@@ -51,9 +51,8 @@
                     <label>入库类型：</label>
                     <select class="filter-select" id="searchType">
                         <option value="">全部</option>
-                        <option value="成品入库">成品入库</option>
                         <option value="模具入库">模具入库</option>
-                        <option value="辅材入库">辅材入库</option>
+                        <option value="包装纸箱入库">包装纸箱入库</option>
                     </select>
                 </div>
                 <div class="filter-group date-range-group">
@@ -125,9 +124,8 @@
                             <label class="required">入库类型：</label>
                             <select class="form-input" id="orderType" required>
                                 <option value="">请选择</option>
-                                <option value="成品入库">成品入库</option>
                                 <option value="模具入库">模具入库</option>
-                                <option value="辅材入库">辅材入库</option>
+                                <option value="包装纸箱入库">包装纸箱入库</option>
                             </select>
                         </div>
                     </div>
@@ -208,16 +206,15 @@
                     </tbody>
                 </table>
                 
-                <div class="section-title">分配托盘记录</div>
+                <div class="section-title">组盘记录</div>
                 <table class="detail-table">
                     <thead>
                         <tr>
                             <th>容器编码</th>
-                            <th>组盘状态</th>
+                            <th>入库状态</th>
                             <th>物料编码</th>
                             <th>物料名称</th>
-                            <th>物料数量</th>
-                            <th>当前位置</th>
+                            <th>实际入库数量</th>
                         </tr>
                     </thead>
                     <tbody id="detailPalletBody">

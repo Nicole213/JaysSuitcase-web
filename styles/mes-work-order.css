@@ -333,6 +333,10 @@
     max-width: 1200px;
 }
 
+.modal-content-item-detail {
+    max-width: 980px;
+}
+
 .modal-header {
     display: flex;
     align-items: center;
@@ -534,6 +538,10 @@
     color: #52c41a;
 }
 
+.item-detail-content {
+    display: block;
+}
+
 .item-detail-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -563,6 +571,102 @@
     font-size: 14px;
     color: #333;
     font-weight: 500;
+    word-break: break-all;
+}
+
+.item-detail-section {
+    margin-top: 20px;
+}
+
+.item-detail-section:first-child {
+    margin-top: 0;
+}
+
+.item-detail-section-title {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: #333;
+}
+
+.item-detail-table-wrap {
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.item-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.item-detail-table thead {
+    background: #f5f7fa;
+}
+
+.item-detail-table th,
+.item-detail-table td {
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.item-detail-table th {
+    color: #333;
+    font-weight: 600;
+}
+
+.item-detail-table td {
+    color: #666;
+}
+
+.item-detail-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.pallet-basic-section {
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.pallet-basic-title {
+    padding: 14px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.pallet-basic-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 32px;
+    row-gap: 0;
+    padding: 6px 16px 8px;
+}
+
+.pallet-basic-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-height: 30px;
+    padding: 8px 0;
+}
+
+.pallet-basic-label {
+    flex-shrink: 0;
+    min-width: 96px;
+    font-size: 14px;
+    color: #666;
+    white-space: nowrap;
+}
+
+.pallet-basic-value {
+    font-size: 14px;
+    color: #333;
+    line-height: 1.6;
     word-break: break-all;
 }
 
@@ -649,6 +753,10 @@
 @media (max-width: 768px) {
     .detail-basic-grid,
     .item-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pallet-basic-list {
         grid-template-columns: 1fr;
     }
 

@@ -438,9 +438,21 @@
     border-color: #667eea;
 }
 
+.readonly-field {
+    background: #f5f5f5;
+    color: #999;
+}
+
 textarea.form-input {
     resize: vertical;
     font-family: inherit;
+}
+
+.material-section.hidden,
+.material-detail-section.hidden,
+.allocation-detail-section.hidden,
+.task-detail-section.hidden {
+    display: none;
 }
 
 /* 自动完成样式 */

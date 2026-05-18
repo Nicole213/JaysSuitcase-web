@@ -23,22 +23,22 @@ class AGVChannelManager {
 
     initOptions() {
         this.areaOptions = [
-            { id: 'AREA001', name: 'AGV平库库区001' },
-            { id: 'AREA002', name: 'AGV平库库区002' },
-            { id: 'AREA003', name: 'AGV平库库区003' },
-            { id: 'AREA004', name: 'AGV平库库区004' },
-            { id: 'AREA005', name: 'AGV平库库区005' }
+            { id: 'PK001', name: 'PK001' },
+            { id: 'PK002', name: 'PK002' },
+            { id: 'PK003', name: 'PK003' },
+            { id: 'PK004', name: 'PK004' },
+            { id: 'PK005', name: 'PK005' }
         ];
 
         this.locationOptions = [
-            { id: 'LOC001-01-01', name: 'LOC001-01-01', areaId: 'AREA001', areaName: 'AGV平库库区001', currentStatus: '有货', enableStatus: '启用' },
-            { id: 'LOC001-01-02', name: 'LOC001-01-02', areaId: 'AREA001', areaName: 'AGV平库库区001', currentStatus: '空库位', enableStatus: '启用' },
-            { id: 'LOC001-02-01', name: 'LOC001-02-01', areaId: 'AREA001', areaName: 'AGV平库库区001', currentStatus: '已分配', enableStatus: '启用' },
-            { id: 'LOC002-01-01', name: 'LOC002-01-01', areaId: 'AREA002', areaName: 'AGV平库库区002', currentStatus: '有货', enableStatus: '启用' },
-            { id: 'LOC002-01-02', name: 'LOC002-01-02', areaId: 'AREA002', areaName: 'AGV平库库区002', currentStatus: '空托', enableStatus: '启用' },
-            { id: 'LOC003-01-01', name: 'LOC003-01-01', areaId: 'AREA003', areaName: 'AGV平库库区003', currentStatus: '空库位', enableStatus: '禁用' },
-            { id: 'LOC004-01-01', name: 'LOC004-01-01', areaId: 'AREA004', areaName: 'AGV平库库区004', currentStatus: '有货', enableStatus: '启用' },
-            { id: 'LOC005-01-01', name: 'LOC005-01-01', areaId: 'AREA005', areaName: 'AGV平库库区005', currentStatus: '空库位', enableStatus: '启用' }
+            { id: 'PK001-01-001', name: 'PK001-01-001', areaId: 'PK001', areaName: 'PK001', currentStatus: '有货', enableStatus: '启用' },
+            { id: 'PK001-01-002', name: 'PK001-01-002', areaId: 'PK001', areaName: 'PK001', currentStatus: '空库位', enableStatus: '启用' },
+            { id: 'PK001-02-001', name: 'PK001-02-001', areaId: 'PK001', areaName: 'PK001', currentStatus: '已分配', enableStatus: '启用' },
+            { id: 'PK002-01-001', name: 'PK002-01-001', areaId: 'PK002', areaName: 'PK002', currentStatus: '有货', enableStatus: '启用' },
+            { id: 'PK002-02-001', name: 'PK002-02-001', areaId: 'PK002', areaName: 'PK002', currentStatus: '空托', enableStatus: '启用' },
+            { id: 'PK003-01-001', name: 'PK003-01-001', areaId: 'PK003', areaName: 'PK003', currentStatus: '空库位', enableStatus: '禁用' },
+            { id: 'PK004-01-001', name: 'PK004-01-001', areaId: 'PK004', areaName: 'PK004', currentStatus: '有货', enableStatus: '启用' },
+            { id: 'PK005-01-001', name: 'PK005-01-001', areaId: 'PK005', areaName: 'PK005', currentStatus: '空库位', enableStatus: '启用' }
         ];
     }
 
@@ -127,72 +127,72 @@ class AGVChannelManager {
         this.mockData = [
             {
                 id: 1,
-                channelCode: 'CH001',
+                channelCode: 'PK001-01',
                 channelName: 'AGV平库通道001',
-                belongArea: 'AREA001',
-                belongAreaName: 'AGV平库库区001',
-                relatedLocations: ['LOC001-01-01', 'LOC001-01-02'],
-                relatedLocationNames: ['LOC001-01-01', 'LOC001-01-02'],
+                belongArea: 'PK001',
+                belongAreaName: 'PK001',
+                relatedLocations: ['PK001-01-001', 'PK001-01-002'],
+                relatedLocationNames: ['PK001-01-001', 'PK001-01-002'],
                 status: '启用',
                 remark: '主作业通道',
                 createTime: '2024-01-15 10:30:00'
             },
             {
                 id: 2,
-                channelCode: 'CH002',
+                channelCode: 'PK001-02',
                 channelName: 'AGV平库通道002',
-                belongArea: 'AREA001',
-                belongAreaName: 'AGV平库库区001',
-                relatedLocations: ['LOC001-02-01'],
-                relatedLocationNames: ['LOC001-02-01'],
+                belongArea: 'PK001',
+                belongAreaName: 'PK001',
+                relatedLocations: ['PK001-02-001'],
+                relatedLocationNames: ['PK001-02-001'],
                 status: '启用',
                 remark: '入库缓冲通道',
                 createTime: '2024-01-16 14:20:00'
             },
             {
                 id: 3,
-                channelCode: 'CH003',
+                channelCode: 'PK002-01',
                 channelName: 'AGV平库通道003',
-                belongArea: 'AREA002',
-                belongAreaName: 'AGV平库库区002',
-                relatedLocations: ['LOC002-01-01'],
-                relatedLocationNames: ['LOC002-01-01'],
+                belongArea: 'PK002',
+                belongAreaName: 'PK002',
+                relatedLocations: ['PK002-01-001'],
+                relatedLocationNames: ['PK002-01-001'],
                 status: '禁用',
                 remark: '维护中',
                 createTime: '2024-01-17 09:15:00'
             },
             {
                 id: 4,
-                channelCode: 'CH004',
+                channelCode: 'PK002-02',
                 channelName: 'AGV平库通道004',
-                belongArea: 'AREA002',
-                belongAreaName: 'AGV平库库区002',
-                relatedLocations: ['LOC002-01-02'],
-                relatedLocationNames: ['LOC002-01-02'],
+                belongArea: 'PK002',
+                belongAreaName: 'PK002',
+                relatedLocations: ['PK002-02-001'],
+                relatedLocationNames: ['PK002-02-001'],
                 status: '启用',
                 remark: '出库缓存通道',
                 createTime: '2024-01-18 16:45:00'
             },
             {
                 id: 5,
-                channelCode: 'CH005',
+                channelCode: 'PK003-01',
                 channelName: 'AGV平库通道005',
-                belongArea: 'AREA003',
-                belongAreaName: 'AGV平库库区003',
-                relatedLocations: ['LOC003-01-01'],
-                relatedLocationNames: ['LOC003-01-01'],
+                belongArea: 'PK003',
+                belongAreaName: 'PK003',
+                relatedLocations: ['PK003-01-001'],
+                relatedLocationNames: ['PK003-01-001'],
                 status: '启用',
                 remark: '质检专用通道',
                 createTime: '2024-01-19 11:30:00'
             },
             {
                 id: 6,
-                channelCode: 'CH006',
+                channelCode: 'PK004-01',
                 channelName: 'AGV平库通道006',
-                belongArea: 'AREA004',
-                belongAreaName: 'AGV平库库区004',
-                relatedLocations: ['LOC004-01-01'],
-                relatedLocationNames: ['LOC004-01-01'],
+                belongArea: 'PK004',
+                belongAreaName: 'PK004',
+                relatedLocations: ['PK004-01-001'],
+                relatedLocationNames: ['PK004-01-001'],
                 status: '启用',
                 remark: '成品周转通道',
                 createTime: '2024-01-20 08:45:00'

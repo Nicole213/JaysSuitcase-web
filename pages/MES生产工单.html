@@ -113,6 +113,7 @@
                                 <th width="100">出库数量</th>
                                 <th width="110">库区编码</th>
                                 <th width="130">库位编码</th>
+                                <th width="160">出库时间</th>
                                 <th width="100">状态</th>
                                 <th width="90">操作</th>
                             </tr>
@@ -135,6 +136,7 @@
                                 <th width="100">出库数量</th>
                                 <th width="110">库区编码</th>
                                 <th width="130">库位编码</th>
+                                <th width="160">出库时间</th>
                                 <th width="100">状态</th>
                                 <th width="90">操作</th>
                             </tr>
@@ -157,6 +159,7 @@
                                 <th width="100">入库数量</th>
                                 <th width="110">库区编码</th>
                                 <th width="130">库位编码</th>
+                                <th width="160">入库时间</th>
                                 <th width="100">状态</th>
                                 <th width="90">操作</th>
                             </tr>
@@ -172,13 +175,13 @@
     </div>
 
     <div class="modal" id="itemDetailModal">
-        <div class="modal-content">
+        <div class="modal-content modal-content-item-detail">
             <div class="modal-header">
                 <h3 id="itemDetailTitle">明细信息</h3>
                 <span class="modal-close" id="closeItemDetailModal">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="item-detail-grid" id="itemDetailContent"></div>
+                <div class="item-detail-content" id="itemDetailContent"></div>
             </div>
             <div class="modal-footer">
                 <button class="modal-btn secondary" id="closeItemDetailBtn">关闭</button>

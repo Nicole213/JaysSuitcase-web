@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成品抽检单</title>
+    <link rel="stylesheet" href="../styles/pages.css">
+    <link rel="stylesheet" href="../styles/finished-inspection-order.css">
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <h1>成品抽检单</h1>
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>成品抽检单号：</label>
+                    <input type="text" class="filter-input" id="searchInspectionNo" placeholder="请输入成品抽检单号">
+                </div>
+                <div class="filter-group">
+                    <label>关联MES生产工单号：</label>
+                    <input type="text" class="filter-input wide" id="searchMesNo" placeholder="请输入MES生产工单号">
+                </div>
+                <div class="filter-group">
+                    <label>状态：</label>
+                    <select class="filter-select" id="searchStatus">
+                        <option value="">全部</option>
+                        <option value="待分配">待分配</option>
+                        <option value="已分配">已分配</option>
+                        <option value="待检验">待检验</option>
+                        <option value="检验中">检验中</option>
+                        <option value="待确认回库">待确认回库</option>
+                        <option value="已确认回库">已确认回库</option>
+                        <option value="已完成">已完成</option>
+                    </select>
+                </div>
+                <button class="search-btn" id="searchBtn">查询</button>
+                <button class="reset-btn" id="resetBtn">重置</button>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="primary-btn" id="addBtn">新增成品抽检单</button>
+        </div>
+
+        <div class="table-section">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th width="180">成品抽检单号</th>
+                        <th width="190">关联MES生产工单号</th>
+                        <th width="140">物料编码</th>
+                        <th width="180">物料名称</th>
+                        <th width="100">总托数</th>
+                        <th width="110">抽检托数</th>
+                        <th width="160">目标检验室</th>
+                        <th width="140">状态</th>
+                        <th width="170">创建时间</th>
+                        <th width="170">完成时间</th>
+                        <th width="300">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="inspectionTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button class="page-btn" id="prevPage">上一页</button>
+            <span class="page-info">第 <span id="currentPage">1</span> 页，共 <span id="totalPages">1</span> 页</span>
+            <button class="page-btn" id="nextPage">下一页</button>
+        </div>
+    </div>
+
+    <div class="modal" id="inspectionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">新增成品抽检单</h3>
+                <span class="modal-close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="inspectionForm">
+                    <div class="form-grid">
+                        <div class="form-group vertical">
+                            <label class="required">成品抽检单号</label>
+                            <input type="text" class="form-input" id="inspectionNo" readonly placeholder="系统自动生成">
+                        </div>
+                        <div class="form-group vertical">
+                            <label class="required">关联MES生产工单号</label>
+                            <select class="form-input" id="mesOrderNo" required></select>
+                        </div>
+                        <div class="form-group vertical">
+                            <label>物料编码/物料名称</label>
+                            <input type="text" class="form-input readonly-field" id="materialDisplay" readonly placeholder="选择工单后自动带出">
+                        </div>
+                        <div class="form-group vertical">
+                            <label>总托数</label>
+                            <input type="text" class="form-input readonly-field" id="totalPalletsDisplay" readonly placeholder="选择工单后自动带出">
+                        </div>
+                        <div class="form-group vertical">
+                            <label class="required">目标检验室</label>
+                            <select class="form-input" id="targetLab" required>
+                                <option value="">请选择</option>
+                                <option value="检验室1">检验室1</option>
+                                <option value="检验室2">检验室2</option>
+                                <option value="检验室3">检验室3</option>
+                            </select>
+                        </div>
+                        <div class="form-group vertical">
+                            <label class="required">抽检托数</label>
+                            <input type="number" class="form-input" id="palletCount" min="1" max="20" required placeholder="请输入托数">
+                        </div>
+                        <div class="form-group vertical full-width">
+                            <label>备注</label>
+                            <textarea class="form-textarea" id="inspectionRemark" rows="3" placeholder="请输入抽检说明、异常备注等"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn primary" id="saveBtn">保存</button>
+                <button class="modal-btn secondary" id="cancelBtn">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="detailModal">
+        <div class="modal-content modal-content-wide">
+            <div class="modal-header">
+                <h3>成品抽检单详情</h3>
+                <span class="modal-close" id="closeDetailModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="detail-basic-section">
+                    <div class="detail-basic-title">抽检单基本信息</div>
+                    <div class="detail-basic-grid" id="detailSummary"></div>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-header">
+                        <h4>抽检出库明细</h4>
+                    </div>
+                    <table class="detail-table">
+                        <thead>
+                            <tr>
+                                <th width="70">序号</th>
+                                <th width="130">容器编码</th>
+                                <th width="140">物料编码</th>
+                                <th width="160">物料名称</th>
+                                <th width="100">出库数量</th>
+                                <th width="120">来源库位</th>
+                                <th width="140">出库任务号</th>
+                                <th width="120">状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="outboundDetailBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-header">
+                        <h4>抽检入库明细</h4>
+                    </div>
+                    <table class="detail-table">
+                        <thead>
+                            <tr>
+                                <th width="70">序号</th>
+                                <th width="130">容器编码</th>
+                                <th width="140">物料编码</th>
+                                <th width="160">物料名称</th>
+                                <th width="100">回库数量</th>
+                                <th width="120">目标库位</th>
+                                <th width="140">回库任务号</th>
+                                <th width="120">状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inboundDetailBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="detail-section">
+                    <div class="detail-section-header">
+                        <h4>抽检结果明细</h4>
+                    </div>
+                    <table class="detail-table">
+                        <thead>
+                            <tr>
+                                <th width="70">序号</th>
+                                <th width="130">容器编码</th>
+                                <th width="100">检验结果</th>
+                                <th width="160">检验员</th>
+                                <th width="160">检验时间</th>
+                                <th width="220">备注</th>
+                                <th width="150">不合格原因</th>
+                                <th width="140">不合格照片</th>
+                                <th width="100">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultDetailBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="closeDetailBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="snDetailModal">
+        <div class="modal-content modal-content-wide">
+            <div class="modal-header">
+                <h3 id="snDetailTitle">容器SN明细</h3>
+                <span class="modal-close" id="closeSnDetailModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th width="70">序号</th>
+                            <th width="180">SN编码</th>
+                            <th width="140">容器编码</th>
+                            <th width="140">物料编码</th>
+                            <th width="160">物料名称</th>
+                            <th width="120">检验结果</th>
+                            <th width="160">检验员</th>
+                            <th width="170">检验时间</th>
+                            <th width="220">备注</th>
+                            <th width="150">不合格原因</th>
+                            <th width="140">不合格照片</th>
+                        </tr>
+                    </thead>
+                    <tbody id="snDetailBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="closeSnDetailBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="imagePreviewModal">
+        <div class="modal-content modal-content-image-preview">
+            <div class="modal-header">
+                <h3>不合格照片预览</h3>
+                <span class="modal-close" id="closeImagePreviewModal">&times;</span>
+            </div>
+            <div class="modal-body image-preview-body">
+                <img id="imagePreviewTarget" class="image-preview-target" alt="不合格照片">
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="closeImagePreviewBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/finished-inspection-order.js"></script>
+</body>
+</html>

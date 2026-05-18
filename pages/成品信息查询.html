@@ -40,15 +40,17 @@
                     <label>物料状态：</label>
                     <select class="filter-select status-select" id="searchStatus">
                         <option value="">全部</option>
-                        <option value="待包装待入库">待包装待入库</option>
-                        <option value="待包装已入平库">待包装已入平库</option>
-                        <option value="待包装已出平库">待包装已出平库</option>
-                        <option value="已包装待检">已包装待检</option>
+                        <option value="待包装组盘">待包装组盘</option>
+                        <option value="待包装入平库">待包装入平库</option>
+                        <option value="待包装出平库">待包装出平库</option>
+                        <option value="已包装组盘">已包装组盘</option>
+                        <option value="已包装入平库">已包装入平库</option>
+                        <option value="已包装出平库待检">已包装出平库待检</option>
                         <option value="检验中">检验中</option>
                         <option value="已检待入库">已检待入库</option>
                         <option value="已检入平库">已检入平库</option>
                         <option value="已入立库">已入立库</option>
-                        <option value="已发货">已发货</option>
+                        <option value="发货出库">发货出库</option>
                     </select>
                 </div>
             </div>
@@ -137,7 +139,10 @@
                 <span class="modal-close" id="closeHistoryModal">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="detail-grid" id="historySummary"></div>
+                <div class="history-basic-section">
+                    <div class="history-basic-title">基本信息</div>
+                    <div class="history-basic-grid" id="historySummary"></div>
+                </div>
                 <div class="detail-section">
                     <div class="detail-section-header">
                         <h4>历史流转记录</h4>
@@ -145,12 +150,12 @@
                     <table class="detail-table">
                         <thead>
                             <tr>
-                                <th width="170">时间</th>
                                 <th width="140">物料状态</th>
                                 <th width="130">业务节点</th>
                                 <th width="120">容器编码</th>
+                                <th width="100">库区</th>
                                 <th width="130">库位编码</th>
-                                <th>说明</th>
+                                <th width="170">更新时间</th>
                             </tr>
                         </thead>
                         <tbody id="historyTableBody"></tbody>

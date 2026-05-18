@@ -25,34 +25,34 @@ class AGVLocationManager {
 
     initOptions() {
         this.areaOptions = [
-            { id: 'AREA001', name: 'AGV平库库区001' },
-            { id: 'AREA002', name: 'AGV平库库区002' },
-            { id: 'AREA003', name: 'AGV平库库区003' },
-            { id: 'AREA004', name: 'AGV平库库区004' },
-            { id: 'AREA005', name: 'AGV平库库区005' }
+            { id: 'PK001', name: 'PK001' },
+            { id: 'PK002', name: 'PK002' },
+            { id: 'PK003', name: 'PK003' },
+            { id: 'PK004', name: 'PK004' },
+            { id: 'PK005', name: 'PK005' }
         ];
 
         this.channelOptions = [
-            { id: 'CH001', name: 'AGV平库通道001', areaId: 'AREA001' },
-            { id: 'CH002', name: 'AGV平库通道002', areaId: 'AREA001' },
-            { id: 'CH003', name: 'AGV平库通道003', areaId: 'AREA002' },
-            { id: 'CH004', name: 'AGV平库通道004', areaId: 'AREA002' },
-            { id: 'CH005', name: 'AGV平库通道005', areaId: 'AREA003' },
-            { id: 'CH006', name: 'AGV平库通道006', areaId: 'AREA004' },
-            { id: 'CH007', name: 'AGV平库通道007', areaId: 'AREA005' }
+            { id: 'PK001-01', name: 'PK001-01', areaId: 'PK001' },
+            { id: 'PK001-02', name: 'PK001-02', areaId: 'PK001' },
+            { id: 'PK002-01', name: 'PK002-01', areaId: 'PK002' },
+            { id: 'PK002-02', name: 'PK002-02', areaId: 'PK002' },
+            { id: 'PK003-01', name: 'PK003-01', areaId: 'PK003' },
+            { id: 'PK004-01', name: 'PK004-01', areaId: 'PK004' },
+            { id: 'PK005-01', name: 'PK005-01', areaId: 'PK005' }
         ];
 
         this.palletDetails = {
-            'LOC001-01-01': [
+            'PK001-01-001': [
                 { palletNo: 'PAL2024001', containerNo: 'CNT2024001', materialCode: 'MAT001', materialName: '黑色拉杆箱', qty: 24 }
             ],
-            'LOC002-01-02': [
+            'PK002-02-001': [
                 { palletNo: 'PAL2024002', containerNo: 'CNT2024003', materialCode: 'MAT008', materialName: '商务双肩包', qty: 12 }
             ],
-            'LOC003-02-01': [
+            'PK003-01-002': [
                 { palletNo: 'PAL2024003', containerNo: 'CNT2024004', materialCode: 'MAT013', materialName: '旅行收纳箱', qty: 18 }
             ],
-            'LOC001-01-03': [
+            'PK001-01-003': [
                 { palletNo: 'PAL2024004', containerNo: 'CNT2024005', materialCode: 'MAT021', materialName: '空托盘', qty: 1 }
             ]
         };
@@ -195,12 +195,12 @@ class AGVLocationManager {
         this.mockData = [
             {
                 id: 1,
-                locationCode: 'LOC001-01-01',
+                locationCode: 'PK001-01-001',
                 locationName: 'AGV入库位01',
-                belongArea: 'AREA001',
-                belongAreaName: 'AGV平库库区001',
-                channel: 'CH001',
-                channelName: 'AGV平库通道001',
+                belongArea: 'PK001',
+                belongAreaName: 'PK001',
+                channel: 'PK001-01',
+                channelName: 'PK001-01',
                 currentStatus: '有货',
                 lockStatus: '正常',
                 enableStatus: '启用',
@@ -213,12 +213,12 @@ class AGVLocationManager {
             },
             {
                 id: 2,
-                locationCode: 'LOC001-01-02',
+                locationCode: 'PK001-01-002',
                 locationName: 'AGV缓存位02',
-                belongArea: 'AREA001',
-                belongAreaName: 'AGV平库库区001',
-                channel: 'CH001',
-                channelName: 'AGV平库通道001',
+                belongArea: 'PK001',
+                belongAreaName: 'PK001',
+                channel: 'PK001-01',
+                channelName: 'PK001-01',
                 currentStatus: '空库位',
                 lockStatus: '正常',
                 enableStatus: '启用',
@@ -231,12 +231,12 @@ class AGVLocationManager {
             },
             {
                 id: 3,
-                locationCode: 'LOC001-02-01',
+                locationCode: 'PK001-02-001',
                 locationName: 'AGV出库位01',
-                belongArea: 'AREA001',
-                belongAreaName: 'AGV平库库区001',
-                channel: 'CH002',
-                channelName: 'AGV平库通道002',
+                belongArea: 'PK001',
+                belongAreaName: 'PK001',
+                channel: 'PK001-02',
+                channelName: 'PK001-02',
                 currentStatus: '已分配',
                 lockStatus: '锁定',
                 enableStatus: '启用',
@@ -249,12 +249,12 @@ class AGVLocationManager {
             },
             {
                 id: 4,
-                locationCode: 'LOC002-01-01',
+                locationCode: 'PK002-01-001',
                 locationName: 'AGV空托位01',
-                belongArea: 'AREA002',
-                belongAreaName: 'AGV平库库区002',
-                channel: 'CH003',
-                channelName: 'AGV平库通道003',
+                belongArea: 'PK002',
+                belongAreaName: 'PK002',
+                channel: 'PK002-01',
+                channelName: 'PK002-01',
                 currentStatus: '空托',
                 lockStatus: '正常',
                 enableStatus: '禁用',
@@ -267,12 +267,12 @@ class AGVLocationManager {
             },
             {
                 id: 5,
-                locationCode: 'LOC002-01-02',
+                locationCode: 'PK002-02-001',
                 locationName: '常规存储位02',
-                belongArea: 'AREA002',
-                belongAreaName: 'AGV平库库区002',
-                channel: 'CH003',
-                channelName: 'AGV平库通道003',
+                belongArea: 'PK002',
+                belongAreaName: 'PK002',
+                channel: 'PK002-02',
+                channelName: 'PK002-02',
                 currentStatus: '有货',
                 lockStatus: '正常',
                 enableStatus: '启用',
@@ -285,12 +285,12 @@ class AGVLocationManager {
             },
             {
                 id: 6,
-                locationCode: 'LOC003-01-01',
+                locationCode: 'PK003-01-001',
                 locationName: '质检库位01',
-                belongArea: 'AREA003',
-                belongAreaName: 'AGV平库库区003',
-                channel: 'CH005',
-                channelName: 'AGV平库通道005',
+                belongArea: 'PK003',
+                belongAreaName: 'PK003',
+                channel: 'PK003-01',
+                channelName: 'PK003-01',
                 currentStatus: '空库位',
                 lockStatus: '正常',
                 enableStatus: '启用',
@@ -303,12 +303,12 @@ class AGVLocationManager {
             },
             {
                 id: 7,
-                locationCode: 'LOC003-02-01',
+                locationCode: 'PK003-01-002',
                 locationName: '周转库位01',
-                belongArea: 'AREA003',
-                belongAreaName: 'AGV平库库区003',
-                channel: 'CH005',
-                channelName: 'AGV平库通道005',
+                belongArea: 'PK003',
+                belongAreaName: 'PK003',
+                channel: 'PK003-01',
+                channelName: 'PK003-01',
                 currentStatus: '有货',
                 lockStatus: '锁定',
                 enableStatus: '启用',
@@ -321,12 +321,12 @@ class AGVLocationManager {
             },
             {
                 id: 8,
-                locationCode: 'LOC001-01-03',
+                locationCode: 'PK001-01-003',
                 locationName: '空托缓存位03',
-                belongArea: 'AREA001',
-                belongAreaName: 'AGV平库库区001',
-                channel: 'CH001',
-                channelName: 'AGV平库通道001',
+                belongArea: 'PK001',
+                belongAreaName: 'PK001',
+                channel: 'PK001-01',
+                channelName: 'PK001-01',
                 currentStatus: '空托',
                 lockStatus: '正常',
                 enableStatus: '启用',

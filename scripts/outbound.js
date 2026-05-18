@@ -1,5 +1,7 @@
 // 出库单管理页面脚本
 
+const ENABLE_INSPECTION_OUTBOUND = false;
+
 // 模拟数据
 let outboundOrdersData = [
     {
@@ -7,9 +9,11 @@ let outboundOrdersData = [
         orderNo: 'CK-2024-0001',
         source: '客户WMS同步',
         upstreamNo: 'WMS-OUT-20240115-001',
-        type: '生产领料',
+        type: '模具出库',
+        outboundPort: '模具出库口',
+        hasAllocatedForOutbound: true,
         materials: [
-            { code: 'WL-2024-001', name: '电子元件A型', plannedQty: 80, outboundQty: 80, allocatedQty: 80 }
+            { code: 'MJ-2024-001', name: '注塑模具A型', plannedQty: 80, outboundQty: 80, allocatedQty: 80 }
         ],
         status: '已完成',
         createTime: '2024-01-15 10:30:00',
@@ -21,9 +25,11 @@ let outboundOrdersData = [
         orderNo: 'CK-2024-0002',
         source: '手工创建',
         upstreamNo: '',
-        type: '销售出库',
+        type: '模具出库',
+        outboundPort: '模具出库口',
+        hasAllocatedForOutbound: true,
         materials: [
-            { code: 'WL-2024-002', name: '机械零件B型', plannedQty: 40, outboundQty: 20, allocatedQty: 40 }
+            { code: 'MJ-2024-002', name: '五金模具B型', plannedQty: 40, outboundQty: 20, allocatedQty: 40 }
         ],
         status: '出库中',
         createTime: '2024-01-16 11:15:00',
@@ -35,12 +41,76 @@ let outboundOrdersData = [
         orderNo: 'CK-2024-0003',
         source: '手工创建',
         upstreamNo: 'SO-2024-003',
-        type: '其他',
+        type: '模具出库',
+        outboundPort: '',
+        hasAllocatedForOutbound: false,
         materials: [
-            { code: 'WL-2024-003', name: '塑料配件C型', plannedQty: 60, outboundQty: 0, allocatedQty: 0 }
+            { code: 'MJ-2024-003', name: '箱包模具C型', plannedQty: 60, outboundQty: 0, allocatedQty: 0 }
         ],
         status: '待出库',
         createTime: '2024-01-17 15:20:00',
+        canEdit: true,
+        canDelete: true
+    },
+    {
+        id: 4,
+        orderNo: 'CK-2024-0004',
+        source: '手工创建',
+        upstreamNo: '',
+        type: '成品抽检出库',
+        materials: [
+            { code: 'CP-2024-003', name: '旅行箱成品C款', plannedQty: '6（托）', outboundQty: '0（托）', allocatedQty: '0（托）' }
+        ],
+        outboundPort: '',
+        hasAllocatedForOutbound: false,
+        mesWorkOrderNo: 'MES-MO-20240518-003',
+        mesTotalPallets: 18,
+        mesMaterialCode: 'CP-2024-003',
+        mesMaterialName: '旅行箱成品C款',
+        inspectionPalletCount: 6,
+        inspectionRoom: '检验室2',
+        status: '待出库',
+        createTime: '2024-01-18 09:45:00',
+        remark: '成品批次抽检',
+        canEdit: true,
+        canDelete: true
+    },
+    {
+        id: 5,
+        orderNo: 'CK-2024-0005',
+        source: '手工创建',
+        upstreamNo: '',
+        type: '模具出库',
+        outboundPort: '模具出库口',
+        hasAllocatedForOutbound: true,
+        materials: [
+            { code: 'MJ-2024-004', name: '拉杆模具D型', plannedQty: 24, outboundQty: 0, allocatedQty: 24 }
+        ],
+        status: '待出库',
+        createTime: '2024-01-18 10:30:00',
+        canEdit: true,
+        canDelete: true
+    },
+    {
+        id: 6,
+        orderNo: 'CK-2024-0006',
+        source: '手工创建',
+        upstreamNo: '',
+        type: '成品抽检出库',
+        materials: [
+            { code: 'CP-2024-004', name: '商务箱成品D款', plannedQty: '4（托）', outboundQty: '0（托）', allocatedQty: '0（托）' }
+        ],
+        outboundPort: '',
+        hasAllocatedForOutbound: false,
+        mesWorkOrderNo: 'MES-MO-20240519-001',
+        mesTotalPallets: 30,
+        mesMaterialCode: 'CP-2024-004',
+        mesMaterialName: '商务箱成品D款',
+        inspectionPalletCount: 4,
+        inspectionRoom: '',
+        status: '待出库',
+        createTime: '2024-01-18 11:00:00',
+        remark: '待抽检分配出库',
         canEdit: true,
         canDelete: true
     }
@@ -83,14 +153,25 @@ const locationInventory = [
     { locationCode: '2-5-10-1', containerCode: 'TP-005', materialCode: 'WL-2024-003', availableQty: 50, row: 2, col: 5, level: 10, depth: 1 },
     { locationCode: '3-2-7-1', containerCode: 'TP-006', materialCode: 'WL-2024-003', availableQty: 40, row: 3, col: 2, level: 7, depth: 1 },
     { locationCode: '1-8-12-2', containerCode: 'TP-007', materialCode: 'WL-2024-001', availableQty: 20, row: 1, col: 8, level: 12, depth: 2 },
-    { locationCode: '2-4-9-1', containerCode: 'TP-008', materialCode: 'WL-2024-002', availableQty: 18, row: 2, col: 4, level: 9, depth: 1 }
+    { locationCode: '2-4-9-1', containerCode: 'TP-008', materialCode: 'WL-2024-002', availableQty: 18, row: 2, col: 4, level: 9, depth: 1 },
+    { locationCode: '4-1-3-1', containerCode: 'TP-009', materialCode: 'MJ-2024-003', availableQty: 30, row: 4, col: 1, level: 3, depth: 1 },
+    { locationCode: '4-2-3-1', containerCode: 'TP-010', materialCode: 'MJ-2024-003', availableQty: 30, row: 4, col: 2, level: 3, depth: 1 },
+    { locationCode: '4-3-4-1', containerCode: 'TP-011', materialCode: 'MJ-2024-004', availableQty: 24, row: 4, col: 3, level: 4, depth: 1 }
 ];
 
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
+    filteredData = getVisibleOutboundOrders();
     renderTable();
     initEventListeners();
 });
+
+function getVisibleOutboundOrders() {
+    if (ENABLE_INSPECTION_OUTBOUND) {
+        return [...outboundOrdersData];
+    }
+    return outboundOrdersData.filter(order => !isInspectionOutboundType(order.type));
+}
 
 // 渲染表格
 function renderTable() {
@@ -100,14 +181,13 @@ function renderTable() {
     const pageData = filteredData.slice(start, end);
 
     tbody.innerHTML = pageData.map(order => {
-        const material = order.materials[0];
-        // 检查是否可以分配（待出库/出库中 且 已分配数量 < 计划数量）
-        const canAllocate = (order.status === '待出库' || order.status === '出库中') && 
-                           order.materials.some(m => (m.allocatedQty || 0) < m.plannedQty);
+        const material = getPrimaryDisplayMaterial(order);
+        const canAllocate = order.status === '待出库' && !order.hasAllocatedForOutbound;
+        const canEdit = order.canEdit && !order.hasAllocatedForOutbound;
+        const canDelete = order.canDelete && !order.hasAllocatedForOutbound;
         
         return `
         <tr>
-            <td><input type="checkbox" class="order-checkbox" value="${order.id}" ${canAllocate ? '' : 'disabled'}></td>
             <td>${order.orderNo}</td>
             <td>
                 <span class="source-badge ${order.source === '客户WMS同步' ? 'sync' : 'manual'}">
@@ -128,30 +208,16 @@ function renderTable() {
             <td>${order.createTime}</td>
             <td>
                 <div class="action-btns">
-                    ${canAllocate ? `<button class="detail-btn" onclick="openManualAllocate(${order.id})">手工分配</button>` : ''}
-                    ${canAllocate ? `<button class="detail-btn" onclick="openAutoAllocate(${order.id})">自动分配</button>` : ''}
+                    ${canAllocate ? `<button class="detail-btn" onclick="openAutoAllocate(${order.id})">分配出库</button>` : ''}
                     <button class="detail-btn" onclick="showDetail(${order.id})">详情</button>
-                    ${order.canEdit ? `<button class="edit-btn" onclick="editOrder(${order.id})">编辑</button>` : ''}
-                    ${order.canDelete ? `<button class="delete-btn" onclick="deleteOrder(${order.id})">删除</button>` : ''}
+                    ${canEdit ? `<button class="edit-btn" onclick="editOrder(${order.id})">编辑</button>` : ''}
+                    ${canDelete ? `<button class="delete-btn" onclick="deleteOrder(${order.id})">删除</button>` : ''}
                     ${(order.status === '待出库' || order.status === '出库中') ? 
                         `<button class="force-btn" onclick="forceComplete(${order.id})">强制完成</button>` : ''}
                 </div>
             </td>
         </tr>
     `}).join('');
-
-    // 绑定复选框事件
-    tbody.querySelectorAll('.order-checkbox').forEach(cb => {
-        cb.addEventListener('change', function() {
-            const id = parseInt(this.value);
-            if (this.checked) {
-                selectedOrders.add(id);
-            } else {
-                selectedOrders.delete(id);
-            }
-            updateSelectAllOrders();
-        });
-    });
 
     updatePagination();
 }
@@ -180,8 +246,7 @@ function initEventListeners() {
     document.getElementById('searchBtn').addEventListener('click', searchOrders);
     document.getElementById('resetBtn').addEventListener('click', resetSearch);
     document.getElementById('addBtn').addEventListener('click', openAddModal);
-    document.getElementById('batchAllocateBtn').addEventListener('click', openBatchAllocate);
-    document.getElementById('selectAllOrders').addEventListener('change', toggleSelectAllOrders);
+    document.getElementById('orderType').addEventListener('change', handleOrderTypeChange);
     
     document.getElementById('prevPage').addEventListener('click', () => {
         if (currentPage > 1) {
@@ -225,11 +290,6 @@ function initEventListeners() {
     document.getElementById('resetLocationBtn').addEventListener('click', resetLocationSearch);
     document.getElementById('selectAllLocations').addEventListener('change', toggleSelectAllLocations);
     
-    // 自动分配出库口选择
-    document.getElementById('autoAllocatePortClose').addEventListener('click', closeAutoAllocatePortModal);
-    document.getElementById('confirmAutoAllocateBtn').addEventListener('click', confirmAutoAllocate);
-    document.getElementById('autoAllocatePortCancelBtn').addEventListener('click', closeAutoAllocatePortModal);
-    
     // 合并订单确认
     document.getElementById('mergeOrderClose').addEventListener('click', closeMergeOrderModal);
     document.getElementById('confirmMergeOrderBtn').addEventListener('click', confirmMergeOrder);
@@ -262,10 +322,12 @@ function searchOrders() {
     const startDate = document.getElementById('searchStartDate').value;
     const endDate = document.getElementById('searchEndDate').value;
     
-    filteredData = outboundOrdersData.filter(order => {
+    filteredData = getVisibleOutboundOrders().filter(order => {
         const matchOrderNo = !orderNo || order.orderNo.toLowerCase().includes(orderNo);
         const matchUpstreamNo = !upstreamNo || order.upstreamNo.toLowerCase().includes(upstreamNo);
-        const matchMaterialCode = !materialCode || order.materials.some(m => m.code.toLowerCase().includes(materialCode));
+        const matchMaterialCode = !materialCode || (
+            order.materials && order.materials.some(m => m.code.toLowerCase().includes(materialCode))
+        );
         const matchStatus = !status || order.status === status;
         const matchSource = !source || order.source === source;
         const matchType = !type || order.type === type;
@@ -295,7 +357,7 @@ function resetSearch() {
     document.getElementById('searchType').value = '';
     document.getElementById('searchStartDate').value = '';
     document.getElementById('searchEndDate').value = '';
-    filteredData = [...outboundOrdersData];
+    filteredData = getVisibleOutboundOrders();
     currentPage = 1;
     renderTable();
 }
@@ -310,6 +372,7 @@ function openAddModal() {
     const orderNo = generateOrderNo();
     document.getElementById('orderNo').value = orderNo;
     document.getElementById('materialList').innerHTML = '';
+    updateOrderFormByType('');
     
     document.getElementById('outboundModal').classList.add('active');
 }
@@ -320,6 +383,47 @@ function generateOrderNo() {
     const year = now.getFullYear();
     const seq = String(outboundOrdersData.length + 1).padStart(4, '0');
     return `CK-${year}-${seq}`;
+}
+
+function isInspectionOutboundType(type) {
+    return type === '成品抽检出库';
+}
+
+function formatPalletCount(value) {
+    const numericValue = Number(value || 0);
+    return `${numericValue}（托）`;
+}
+
+function getPrimaryDisplayMaterial(order) {
+    if (order.materials && order.materials.length > 0) {
+        return order.materials[0];
+    }
+
+    if (isInspectionOutboundType(order.type)) {
+        return {
+            code: order.mesMaterialCode || '-',
+            name: order.mesMaterialName || '-',
+            plannedQty: formatPalletCount(order.inspectionPalletCount),
+            outboundQty: formatPalletCount(order.outboundPalletCount),
+            allocatedQty: formatPalletCount(order.allocatedPalletCount)
+        };
+    }
+
+    return {
+        code: '-',
+        name: '-',
+        plannedQty: 0,
+        outboundQty: 0,
+        allocatedQty: 0
+    };
+}
+
+function handleOrderTypeChange() {
+    updateOrderFormByType(document.getElementById('orderType').value);
+}
+
+function updateOrderFormByType() {
+    document.getElementById('materialSection').classList.remove('hidden');
 }
 
 // 添加物料项
@@ -481,6 +585,14 @@ function initMaterialAutocomplete(materialItem) {
 function editOrder(id) {
     const order = outboundOrdersData.find(o => o.id === id);
     if (!order) return;
+    if (isInspectionOutboundType(order.type)) {
+        alert('成品抽检出库功能暂未开放显示。');
+        return;
+    }
+    if (order.hasAllocatedForOutbound) {
+        alert('该出库单已分配出库，不允许编辑！');
+        return;
+    }
     
     editingOrderId = id;
     materialCounter = 0;
@@ -489,8 +601,9 @@ function editOrder(id) {
     document.getElementById('orderType').value = order.type;
     document.getElementById('upstreamNo').value = order.upstreamNo || '';
     document.getElementById('orderRemark').value = order.remark || '';
-    
     document.getElementById('materialList').innerHTML = '';
+    updateOrderFormByType(order.type);
+
     order.materials.forEach(material => {
         addMaterialItem();
         const items = document.querySelectorAll('.material-item');
@@ -501,7 +614,6 @@ function editOrder(id) {
         lastItem.querySelector('.material-name-value').value = material.name;
         lastItem.querySelector('.material-qty').value = material.plannedQty;
         
-        // 填充库存数量
         const materialData = systemMaterials.find(m => m.code === material.code);
         if (materialData) {
             lastItem.querySelector('.material-stock-qty').value = materialData.stockQty;
@@ -518,22 +630,27 @@ function saveOrder() {
     const upstreamNo = document.getElementById('upstreamNo').value.trim();
     const orderRemark = document.getElementById('orderRemark').value.trim();
     
+    if (!ENABLE_INSPECTION_OUTBOUND && isInspectionOutboundType(orderType)) {
+        alert('成品抽检出库功能暂未开放显示。');
+        return;
+    }
+
     if (!orderNo || !orderType) {
         alert('请填写所有必填项！');
         return;
     }
-    
+
+    let materials = [];
     const materialItems = document.querySelectorAll('.material-item');
     if (materialItems.length === 0) {
         alert('请至少添加一条物料明细！');
         return;
     }
     
-    const materials = [];
     for (let item of materialItems) {
         const code = item.querySelector('.material-code-value').value.trim();
         const name = item.querySelector('.material-name-value').value.trim();
-        const qty = parseInt(item.querySelector('.material-qty').value);
+        const qty = parseInt(item.querySelector('.material-qty').value, 10);
         
         if (!code || !name || !qty) {
             alert('请填写所有物料明细的必填项！');
@@ -556,6 +673,8 @@ function saveOrder() {
             order.upstreamNo = upstreamNo;
             order.remark = orderRemark;
             order.materials = materials;
+            order.outboundPort = order.outboundPort || '';
+            order.hasAllocatedForOutbound = order.hasAllocatedForOutbound || false;
         }
         alert('出库单已更新！');
     } else {
@@ -569,6 +688,8 @@ function saveOrder() {
             upstreamNo,
             type: orderType,
             materials,
+            outboundPort: '',
+            hasAllocatedForOutbound: false,
             status: '待出库',
             createTime,
             remark: orderRemark,
@@ -588,7 +709,7 @@ function deleteOrder(id) {
     const order = outboundOrdersData.find(o => o.id === id);
     if (!order) return;
     
-    if (!order.canDelete) {
+    if (!order.canDelete || order.hasAllocatedForOutbound) {
         alert('该出库单不可删除！');
         return;
     }
@@ -605,14 +726,125 @@ function showDetail(id) {
     detailOrderId = id;
     const order = outboundOrdersData.find(o => o.id === id);
     if (!order) return;
+    const isInspection = isInspectionOutboundType(order.type);
     
     document.getElementById('detailOrderNo').textContent = order.orderNo;
     document.getElementById('detailSource').textContent = order.source;
     document.getElementById('detailType').textContent = order.type;
     document.getElementById('detailStatus').innerHTML = `<span class="status-badge ${getStatusClass(order.status)}">${order.status}</span>`;
     
+    const firstMaterial = getPrimaryDisplayMaterial(order);
+    const allocationBody = document.getElementById('detailAllocationBody');
+    let detailAllocations = [];
+
+    if (!order.hasAllocatedForOutbound) {
+        detailAllocations = [];
+    } else if (isInspection) {
+        const allocatedPalletCount = order.hasAllocatedForOutbound
+            ? Number(order.allocatedPalletCount || order.inspectionPalletCount || 0)
+            : 0;
+        const outboundPalletCount = Math.min(
+            Number(order.outboundPalletCount || 0),
+            allocatedPalletCount
+        );
+
+        detailAllocations = Array.from({ length: allocatedPalletCount }, (_, index) => {
+            let statusClass = 'pending';
+            let statusText = '待出库';
+
+            if (index < outboundPalletCount) {
+                statusClass = 'completed';
+                statusText = '已完成';
+            } else if (order.status === '出库中') {
+                statusClass = 'processing';
+                statusText = '出库中';
+            } else if (order.status === '已完成') {
+                statusClass = 'completed';
+                statusText = '已完成';
+            }
+
+            return {
+                code: firstMaterial.code,
+                name: firstMaterial.name,
+                containerCode: `TP-${String(order.id * 100 + index + 1).padStart(3, '0')}`,
+                locationCode: `2-5-10-${(index % 2) + 1}`,
+                allocatedQty: 1,
+                allocatedQtyText: '1（托）',
+                statusClass,
+                statusText
+            };
+        });
+    } else {
+        const totalAllocatedQty = order.hasAllocatedForOutbound ? Number(firstMaterial.allocatedQty || 0) : 0;
+        const totalOutboundQty = Math.min(Number(firstMaterial.outboundQty || 0), totalAllocatedQty);
+        const remainingAllocatedQty = Math.max(totalAllocatedQty - totalOutboundQty, 0);
+
+        if (totalOutboundQty > 0) {
+            detailAllocations.push({
+                code: firstMaterial.code,
+                name: firstMaterial.name,
+                containerCode: 'TP-001',
+                locationCode: '1-5-12-1',
+                allocatedQty: totalOutboundQty,
+                allocatedQtyText: String(totalOutboundQty),
+                statusClass: 'completed',
+                statusText: '已完成'
+            });
+        }
+
+        if (remainingAllocatedQty > 0) {
+            detailAllocations.push({
+                code: firstMaterial.code,
+                name: firstMaterial.name,
+                containerCode: totalOutboundQty > 0 ? 'TP-002' : 'TP-001',
+                locationCode: totalOutboundQty > 0 ? '1-6-12-1' : '1-5-12-1',
+                allocatedQty: remainingAllocatedQty,
+                allocatedQtyText: String(remainingAllocatedQty),
+                statusClass: order.status === '出库中' ? 'processing' : 'pending',
+                statusText: order.status === '出库中' ? '出库中' : '待出库'
+            });
+        }
+    }
+
+    allocationBody.innerHTML = detailAllocations.map(item => `
+        <tr>
+            <td>${item.code}</td>
+            <td>${item.name}</td>
+            <td>${item.containerCode}</td>
+            <td>${item.locationCode}</td>
+            <td>${item.allocatedQtyText}</td>
+            <td><span class="status-badge ${item.statusClass}">${item.statusText}</span></td>
+        </tr>
+    `).join('');
+
+    const allocatedQtyByMaterial = new Map();
+    detailAllocations.forEach(item => {
+        allocatedQtyByMaterial.set(item.code, (allocatedQtyByMaterial.get(item.code) || 0) + item.allocatedQty);
+    });
+
+    const detailMaterials = order.materials.map(material => {
+        const allocatedQty = allocatedQtyByMaterial.get(material.code) || 0;
+        const outboundQty = detailAllocations
+            .filter(item => item.code === material.code && item.statusText === '已完成')
+            .reduce((sum, item) => sum + item.allocatedQty, 0);
+
+        if (isInspection) {
+            return {
+                ...material,
+                allocatedQty: formatPalletCount(allocatedQty),
+                outboundQty: formatPalletCount(outboundQty)
+            };
+        }
+
+        return {
+            ...material,
+            allocatedQty,
+            outboundQty
+        };
+    });
+
     const materialBody = document.getElementById('detailMaterialBody');
-    materialBody.innerHTML = order.materials.map(m => `
+    materialBody.innerHTML = detailMaterials.map(m => `
         <tr>
             <td>${m.code}</td>
             <td>${m.name}</td>
@@ -622,61 +854,56 @@ function showDetail(id) {
         </tr>
     `).join('');
     
-    const allocationBody = document.getElementById('detailAllocationBody');
-    allocationBody.innerHTML = `
-        <tr>
-            <td>${order.materials[0].code}</td>
-            <td>${order.materials[0].name}</td>
-            <td>TP-001</td>
-            <td>1-5-12-1</td>
-            <td>30</td>
-            <td><span class="status-badge completed">已出库</span></td>
-        </tr>
-        <tr>
-            <td>${order.materials[0].code}</td>
-            <td>${order.materials[0].name}</td>
-            <td>TP-002</td>
-            <td>1-6-12-1</td>
-            <td>20</td>
-            <td><span class="status-badge pending">待出库</span></td>
-        </tr>
-    `;
-    
     const taskBody = document.getElementById('detailTaskBody');
-    taskBody.innerHTML = `
-        <tr>
-            <td>TASK-${order.orderNo}-001</td>
-            <td>${order.orderNo}</td>
-            <td><span class="command-badge outbound">出库</span></td>
-            <td><span class="task-type-badge">普通出库</span></td>
-            <td>TP-001</td>
-            <td>${order.materials[0].code} - ${order.materials[0].name} × 30</td>
-            <td>1-5-12-1</td>
-            <td>-</td>
-            <td>-</td>
-            <td>1号出库口</td>
-            <td><span class="status-badge completed">已完成</span></td>
-            <td>2024-01-17 16:20:00</td>
-            <td>2024-01-17 16:25:00</td>
-            <td>2024-01-17 16:30:25</td>
-        </tr>
-        <tr>
-            <td>TASK-${order.orderNo}-002</td>
-            <td>${order.orderNo}</td>
-            <td><span class="command-badge outbound">出库</span></td>
-            <td><span class="task-type-badge">普通出库</span></td>
-            <td>TP-002</td>
-            <td>${order.materials[0].code} - ${order.materials[0].name} × 20</td>
-            <td>1-6-12-1</td>
-            <td>-</td>
-            <td>-</td>
-            <td>1号出库口</td>
-            <td><span class="status-badge processing">执行中</span></td>
-            <td>2024-01-17 16:25:00</td>
-            <td>2024-01-17 16:30:00</td>
-            <td>-</td>
-        </tr>
-    `;
+    if (!order.hasAllocatedForOutbound) {
+        taskBody.innerHTML = '';
+    } else if (isInspection) {
+        taskBody.innerHTML = detailAllocations.map((item, index) => {
+            const startTime = item.statusText === '待出库' ? '-' : order.createTime;
+            const endTime = item.statusText === '已完成' ? order.createTime : '-';
+
+            return `
+            <tr>
+                <td>TASK-${order.orderNo}-${String(index + 1).padStart(3, '0')}</td>
+                <td>${order.orderNo}</td>
+                <td><span class="command-badge outbound">出库</span></td>
+                <td><span class="task-type-badge">成品抽检出库</span></td>
+                <td>${item.containerCode}</td>
+                <td>${firstMaterial.code} - ${firstMaterial.name} × ${item.allocatedQtyText}</td>
+                <td>${item.locationCode}</td>
+                <td>${order.inspectionRoom || '-'}</td>
+                <td>-</td>
+                <td>${order.inspectionRoom || '-'}</td>
+                <td><span class="status-badge ${item.statusClass}">${item.statusText}</span></td>
+                <td>${order.createTime}</td>
+                <td>${startTime}</td>
+                <td>${endTime}</td>
+            </tr>`;
+        }).join('');
+    } else {
+        taskBody.innerHTML = detailAllocations.map((item, index) => {
+            const startTime = item.statusText === '待出库' ? '-' : order.createTime;
+            const endTime = item.statusText === '已完成' ? order.createTime : '-';
+
+            return `
+            <tr>
+                <td>TASK-${order.orderNo}-${String(index + 1).padStart(3, '0')}</td>
+                <td>${order.orderNo}</td>
+                <td><span class="command-badge outbound">出库</span></td>
+                <td><span class="task-type-badge">普通出库</span></td>
+                <td>${item.containerCode}</td>
+                <td>${firstMaterial.code} - ${firstMaterial.name} × ${item.allocatedQtyText}</td>
+                <td>${item.locationCode}</td>
+                <td>-</td>
+                <td>-</td>
+                <td>${order.outboundPort || '-'}</td>
+                <td><span class="status-badge ${item.statusClass}">${item.statusText}</span></td>
+                <td>${order.createTime}</td>
+                <td>${startTime}</td>
+                <td>${endTime}</td>
+            </tr>`;
+        }).join('');
+    }
     
     document.getElementById('detailModal').classList.add('active');
 }
@@ -728,7 +955,6 @@ function closeAllModals() {
     document.getElementById('forceCompleteModal').classList.remove('active');
     document.getElementById('manualAllocateModal').classList.remove('active');
     document.getElementById('locationAllocateModal').classList.remove('active');
-    document.getElementById('autoAllocatePortModal').classList.remove('active');
     document.getElementById('mergeOrderModal').classList.remove('active');
     document.getElementById('batchAllocateModal').classList.remove('active');
     editingOrderId = null;
@@ -1045,46 +1271,27 @@ function openAutoAllocate(id) {
     autoAllocatingOrderId = id;
     const order = outboundOrdersData.find(o => o.id === id);
     if (!order) return;
-    
-    document.getElementById('autoAllocateOrderNo').textContent = order.orderNo;
-    document.getElementById('autoAllocatePort').value = '';
-    
-    document.getElementById('autoAllocatePortModal').classList.add('active');
+    if (isInspectionOutboundType(order.type)) {
+        alert('成品抽检出库功能暂未开放显示。');
+        return;
+    }
+    applyAutoAllocate(order, '模具出库口');
 }
 
-// 确认自动分配
-function confirmAutoAllocate() {
-    const port = document.getElementById('autoAllocatePort').value;
-    
-    if (!port) {
-        alert('请选择出库口！');
-        return;
-    }
-    
-    const order = outboundOrdersData.find(o => o.id === autoAllocatingOrderId);
-    if (!order) return;
-    
-    // 根据出库口筛选物料
-    const portMaterials = port === '出库口1' ? 
-        ['WL-2024-001', 'WL-2024-002'] : 
-        ['WL-2024-003', 'WL-2024-004', 'WL-2024-005'];
-    
-    const filteredMaterials = order.materials.filter(m => portMaterials.includes(m.code));
-    
-    if (filteredMaterials.length === 0) {
-        alert('该出库口没有需要出库的物料！');
-        return;
-    }
-    
+function applyAutoAllocate(order, port) {
+    const filteredMaterials = order.materials;
+
     // 自动分配逻辑：为每个物料自动选择库位
     let totalAllocated = 0;
     let allocationCount = 0;
     
     filteredMaterials.forEach(material => {
-        const pendingQty = material.plannedQty - (material.allocatedQty || 0);
+        const plannedQty = Number(material.plannedQty || 0);
+        const currentAllocatedQty = Number(material.allocatedQty || 0);
+        const pendingQty = plannedQty - currentAllocatedQty;
         if (pendingQty <= 0) return;
-        
-        // 查找该物料的可用库位
+
+        // 自动分配逻辑：为每个物料自动选择库位
         const availableLocations = locationInventory.filter(loc => 
             loc.materialCode === material.code
         );
@@ -1110,17 +1317,12 @@ function confirmAutoAllocate() {
     if (order.status === '待出库') {
         order.status = '出库中';
     }
+    order.outboundPort = port;
+    order.hasAllocatedForOutbound = true;
     
-    alert(`自动分配成功！\n出库口：${port}\n已分配托盘数：${allocationCount}\n本次分配数量：${totalAllocated}`);
-    
-    closeAutoAllocatePortModal();
-    renderTable();
-}
-
-// 关闭自动分配出库口选择弹窗
-function closeAutoAllocatePortModal() {
-    document.getElementById('autoAllocatePortModal').classList.remove('active');
+    alert(`分配出库成功！\n出库口：${port}\n已分配托盘数：${allocationCount}\n本次分配数量：${totalAllocated}`);
     autoAllocatingOrderId = null;
+    renderTable();
 }
 
 // 关闭手工分配弹窗

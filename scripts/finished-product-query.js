@@ -1,6 +1,53 @@
 // 成品信息查询页面脚本
 
 class FinishedProductQueryPage {
+    static STATUS_MAP = {
+        '待包装待入库': '待包装组盘',
+        '待包装已入平库': '待包装入平库',
+        '待包装已出平库': '待包装出平库',
+        '已包装待检': '已包装出平库待检',
+        '检验中': '检验中',
+        '已检待入库': '已检待入库',
+        '已检入平库': '已检入平库',
+        '已入立库': '已入立库',
+        '已发货': '发货出库',
+        '待包装组盘': '待包装组盘',
+        '待包装入平库': '待包装入平库',
+        '待包装出平库': '待包装出平库',
+        '已包装组盘': '已包装组盘',
+        '已包装入平库': '已包装入平库',
+        '已包装出平库待检': '已包装出平库待检',
+        '发货出库': '发货出库'
+    };
+
+    static NODE_MAP = {
+        '待包装组盘': '组盘完成',
+        '待包装入平库': '入平库',
+        '待包装出平库': '出平库',
+        '已包装组盘': '包装组盘',
+        '已包装入平库': '入平库',
+        '已包装出平库待检': '出平库待检',
+        '检验中': '抽检',
+        '已检待入库': '抽检完成',
+        '已检入平库': '入平库',
+        '已入立库': '入立库',
+        '发货出库': '发货'
+    };
+
+    static FLOW_SEQUENCE = [
+        '待包装组盘',
+        '待包装入平库',
+        '待包装出平库',
+        '已包装组盘',
+        '已包装入平库',
+        '已包装出平库待检',
+        '检验中',
+        '已检待入库',
+        '已检入平库',
+        '已入立库',
+        '发货出库'
+    ];
+
     constructor() {
         this.currentPage = 1;
         this.pageSize = 10;
@@ -17,7 +64,7 @@ class FinishedProductQueryPage {
     }
 
     buildMockData() {
-        return [
+        const rawData = [
             {
                 id: 1,
                 snCode: 'SN-FG-20240501-001',
@@ -30,12 +77,11 @@ class FinishedProductQueryPage {
                 palletTime: '2024-05-01 08:10:00',
                 inboundTime: '',
                 outboundTime: '',
-                status: '待包装待入库',
+                status: '待包装组盘',
                 lastUpdateTime: '2024-05-01 08:30:00',
-                history: [
-                    { time: '2024-05-01 08:10:00', status: '待包装待入库', node: '生产完工', containerCode: 'TP-1001', locationCode: '-', remark: '产线完工待包装' },
-                    { time: '2024-05-01 08:30:00', status: '待包装待入库', node: '状态更新', containerCode: 'TP-1001', locationCode: '-', remark: '等待平库入库任务' }
-                ]
+                flatLocationCode: '1-1-1-1',
+                warehouseLocationCode: '立库A-01-01',
+                shippingLocationCode: '发货月台01'
             },
             {
                 id: 2,
@@ -49,13 +95,11 @@ class FinishedProductQueryPage {
                 palletTime: '2024-05-01 09:00:00',
                 inboundTime: '2024-05-01 09:25:00',
                 outboundTime: '',
-                status: '待包装已入平库',
+                status: '待包装入平库',
                 lastUpdateTime: '2024-05-01 09:40:00',
-                history: [
-                    { time: '2024-05-01 09:00:00', status: '待包装待入库', node: '组盘完成', containerCode: 'TP-1002', locationCode: '-', remark: '包装前暂存' },
-                    { time: '2024-05-01 09:25:00', status: '待包装已入平库', node: '平库入库', containerCode: 'TP-1002', locationCode: '1-1-2-1', remark: 'AGV完成上架' },
-                    { time: '2024-05-01 09:40:00', status: '待包装已入平库', node: '状态更新', containerCode: 'TP-1002', locationCode: '1-1-2-1', remark: '当前位于平库缓存区' }
-                ]
+                flatLocationCode: '1-1-2-1',
+                warehouseLocationCode: '立库A-01-02',
+                shippingLocationCode: '发货月台01'
             },
             {
                 id: 3,
@@ -69,14 +113,11 @@ class FinishedProductQueryPage {
                 palletTime: '2024-05-01 10:00:00',
                 inboundTime: '2024-05-01 10:15:00',
                 outboundTime: '2024-05-01 13:20:00',
-                status: '待包装已出平库',
+                status: '待包装出平库',
                 lastUpdateTime: '2024-05-01 13:30:00',
-                history: [
-                    { time: '2024-05-01 10:00:00', status: '待包装待入库', node: '组盘完成', containerCode: 'TP-1003', locationCode: '-', remark: '等待入平库' },
-                    { time: '2024-05-01 10:15:00', status: '待包装已入平库', node: '平库入库', containerCode: 'TP-1003', locationCode: '1-2-3-1', remark: '入平库完成' },
-                    { time: '2024-05-01 13:20:00', status: '待包装已出平库', node: '平库出库', containerCode: 'TP-1003', locationCode: '1-2-3-1', remark: '发送至包装工位' },
-                    { time: '2024-05-01 13:30:00', status: '待包装已出平库', node: '状态更新', containerCode: 'TP-1003', locationCode: '-', remark: '已离开平库' }
-                ]
+                flatLocationCode: '1-2-3-1',
+                warehouseLocationCode: '立库A-01-03',
+                shippingLocationCode: '发货月台01'
             },
             {
                 id: 4,
@@ -90,13 +131,11 @@ class FinishedProductQueryPage {
                 palletTime: '2024-05-02 08:40:00',
                 inboundTime: '',
                 outboundTime: '',
-                status: '已包装待检',
+                status: '已包装组盘',
                 lastUpdateTime: '2024-05-02 11:15:00',
-                history: [
-                    { time: '2024-05-02 08:40:00', status: '待包装待入库', node: '组盘完成', containerCode: 'TP-1004', locationCode: '-', remark: '待包装' },
-                    { time: '2024-05-02 10:50:00', status: '待包装已出平库', node: '平库出库', containerCode: 'TP-1004', locationCode: '-', remark: '送往包装区' },
-                    { time: '2024-05-02 11:15:00', status: '已包装待检', node: '包装完成', containerCode: 'TP-1004', locationCode: '-', remark: '等待质检' }
-                ]
+                flatLocationCode: '1-3-1-1',
+                warehouseLocationCode: '立库A-02-01',
+                shippingLocationCode: '发货月台02'
             },
             {
                 id: 5,
@@ -105,18 +144,16 @@ class FinishedProductQueryPage {
                 materialName: '铝框箱',
                 containerCode: 'TP-1005',
                 containerType: '金属框',
-                locationCode: '',
-                area: '',
+                locationCode: '2-1-1-1',
+                area: '库区B',
                 palletTime: '2024-05-02 09:20:00',
-                inboundTime: '',
+                inboundTime: '2024-05-02 13:10:00',
                 outboundTime: '',
-                status: '检验中',
+                status: '已包装入平库',
                 lastUpdateTime: '2024-05-02 14:20:00',
-                history: [
-                    { time: '2024-05-02 09:20:00', status: '已包装待检', node: '包装完成', containerCode: 'TP-1005', locationCode: '-', remark: '提交质检' },
-                    { time: '2024-05-02 13:45:00', status: '检验中', node: '质检开始', containerCode: 'TP-1005', locationCode: '-', remark: '外观检查中' },
-                    { time: '2024-05-02 14:20:00', status: '检验中', node: '状态更新', containerCode: 'TP-1005', locationCode: '-', remark: '待完成抽检' }
-                ]
+                flatLocationCode: '2-1-1-1',
+                warehouseLocationCode: '立库B-01-01',
+                shippingLocationCode: '发货月台02'
             },
             {
                 id: 6,
@@ -129,14 +166,12 @@ class FinishedProductQueryPage {
                 area: '',
                 palletTime: '2024-05-02 10:10:00',
                 inboundTime: '',
-                outboundTime: '',
-                status: '已检待入库',
+                outboundTime: '2024-05-02 16:00:00',
+                status: '已包装出平库待检',
                 lastUpdateTime: '2024-05-02 16:10:00',
-                history: [
-                    { time: '2024-05-02 10:10:00', status: '已包装待检', node: '包装完成', containerCode: 'TP-1006', locationCode: '-', remark: '进入质检队列' },
-                    { time: '2024-05-02 15:40:00', status: '检验中', node: '质检中', containerCode: 'TP-1006', locationCode: '-', remark: '检验通过处理中' },
-                    { time: '2024-05-02 16:10:00', status: '已检待入库', node: '质检完成', containerCode: 'TP-1006', locationCode: '-', remark: '等待入平库' }
-                ]
+                flatLocationCode: '2-1-2-1',
+                warehouseLocationCode: '立库B-01-02',
+                shippingLocationCode: '发货月台02'
             },
             {
                 id: 7,
@@ -145,18 +180,16 @@ class FinishedProductQueryPage {
                 materialName: '硬壳化妆箱',
                 containerCode: 'TP-1007',
                 containerType: '塑料托盘',
-                locationCode: '2-1-4-1',
-                area: '库区B',
+                locationCode: '',
+                area: '',
                 palletTime: '2024-05-03 08:50:00',
-                inboundTime: '2024-05-03 10:00:00',
+                inboundTime: '',
                 outboundTime: '',
-                status: '已检入平库',
+                status: '检验中',
                 lastUpdateTime: '2024-05-03 10:15:00',
-                history: [
-                    { time: '2024-05-03 08:50:00', status: '已检待入库', node: '组盘完成', containerCode: 'TP-1007', locationCode: '-', remark: '等待平库任务' },
-                    { time: '2024-05-03 10:00:00', status: '已检入平库', node: '平库入库', containerCode: 'TP-1007', locationCode: '2-1-4-1', remark: '质检后入平库' },
-                    { time: '2024-05-03 10:15:00', status: '已检入平库', node: '状态更新', containerCode: 'TP-1007', locationCode: '2-1-4-1', remark: '等待立库转运' }
-                ]
+                flatLocationCode: '2-1-4-1',
+                warehouseLocationCode: '立库B-02-01',
+                shippingLocationCode: '发货月台03'
             },
             {
                 id: 8,
@@ -165,19 +198,16 @@ class FinishedProductQueryPage {
                 materialName: '商务公文箱',
                 containerCode: 'TP-1008',
                 containerType: '金属框',
-                locationCode: '2-3-5-1',
-                area: '库区B',
+                locationCode: '',
+                area: '',
                 palletTime: '2024-05-03 09:30:00',
-                inboundTime: '2024-05-03 10:40:00',
+                inboundTime: '',
                 outboundTime: '2024-05-03 12:00:00',
-                status: '已入立库',
+                status: '已检待入库',
                 lastUpdateTime: '2024-05-03 12:25:00',
-                history: [
-                    { time: '2024-05-03 09:30:00', status: '已检待入库', node: '组盘完成', containerCode: 'TP-1008', locationCode: '-', remark: '待平库入库' },
-                    { time: '2024-05-03 10:40:00', status: '已检入平库', node: '平库入库', containerCode: 'TP-1008', locationCode: '2-3-5-1', remark: '缓存完成' },
-                    { time: '2024-05-03 12:00:00', status: '已入立库', node: '转运立库', containerCode: 'TP-1008', locationCode: '2-3-5-1', remark: '已转入立体库' },
-                    { time: '2024-05-03 12:25:00', status: '已入立库', node: '状态更新', containerCode: 'TP-1008', locationCode: '立库A-02-01', remark: '立库上架成功' }
-                ]
+                flatLocationCode: '2-3-5-1',
+                warehouseLocationCode: '立库A-02-01',
+                shippingLocationCode: '发货月台03'
             },
             {
                 id: 9,
@@ -190,16 +220,12 @@ class FinishedProductQueryPage {
                 area: '库区C',
                 palletTime: '2024-05-04 08:20:00',
                 inboundTime: '2024-05-04 09:10:00',
-                outboundTime: '2024-05-04 15:30:00',
-                status: '已发货',
-                lastUpdateTime: '2024-05-04 18:10:00',
-                history: [
-                    { time: '2024-05-04 08:20:00', status: '已检待入库', node: '组盘完成', containerCode: 'TP-1009', locationCode: '-', remark: '待入平库' },
-                    { time: '2024-05-04 09:10:00', status: '已检入平库', node: '平库入库', containerCode: 'TP-1009', locationCode: '3-2-2-1', remark: '缓存完成' },
-                    { time: '2024-05-04 12:10:00', status: '已入立库', node: '转运立库', containerCode: 'TP-1009', locationCode: '立库B-01-03', remark: '立库上架' },
-                    { time: '2024-05-04 15:30:00', status: '已发货', node: '出库发货', containerCode: 'TP-1009', locationCode: '发货月台01', remark: '已完成发货' },
-                    { time: '2024-05-04 18:10:00', status: '已发货', node: '状态更新', containerCode: 'TP-1009', locationCode: '发货月台01', remark: '运输交接完成' }
-                ]
+                outboundTime: '',
+                status: '已检入平库',
+                lastUpdateTime: '2024-05-04 12:30:00',
+                flatLocationCode: '3-2-2-1',
+                warehouseLocationCode: '立库B-01-03',
+                shippingLocationCode: '发货月台01'
             },
             {
                 id: 10,
@@ -208,20 +234,165 @@ class FinishedProductQueryPage {
                 materialName: '防刮行李箱',
                 containerCode: 'TP-1010',
                 containerType: '塑料托盘',
-                locationCode: '3-4-3-2',
+                locationCode: '立库A-02-02',
                 area: '库区C',
                 palletTime: '2024-05-04 11:00:00',
                 inboundTime: '2024-05-04 11:50:00',
                 outboundTime: '',
-                status: '已检入平库',
-                lastUpdateTime: '2024-05-04 12:05:00',
-                history: [
-                    { time: '2024-05-04 11:00:00', status: '已检待入库', node: '组盘完成', containerCode: 'TP-1010', locationCode: '-', remark: '待平库入库' },
-                    { time: '2024-05-04 11:50:00', status: '已检入平库', node: '平库入库', containerCode: 'TP-1010', locationCode: '3-4-3-2', remark: '上架完成' },
-                    { time: '2024-05-04 12:05:00', status: '已检入平库', node: '状态更新', containerCode: 'TP-1010', locationCode: '3-4-3-2', remark: '等待立库调度' }
-                ]
+                status: '已入立库',
+                lastUpdateTime: '2024-05-04 13:20:00',
+                flatLocationCode: '3-4-3-2',
+                warehouseLocationCode: '立库A-02-02',
+                shippingLocationCode: '发货月台02'
+            },
+            {
+                id: 11,
+                snCode: 'SN-FG-20240505-001',
+                materialCode: 'CP-2024-011',
+                materialName: '轻便旅行箱',
+                containerCode: 'TP-1011',
+                containerType: '塑料托盘',
+                locationCode: '发货月台01',
+                area: '库区C',
+                palletTime: '2024-05-05 08:10:00',
+                inboundTime: '2024-05-05 09:00:00',
+                outboundTime: '2024-05-05 16:20:00',
+                status: '发货出库',
+                lastUpdateTime: '2024-05-05 16:20:00',
+                flatLocationCode: '3-1-1-1',
+                warehouseLocationCode: '立库C-01-01',
+                shippingLocationCode: '发货月台01'
             }
         ];
+
+        return rawData.map((item) => this.normalizeProductRecord(item));
+    }
+
+    normalizeProductRecord(item) {
+        const normalizedStatus = this.normalizeStatus(item.status);
+
+        return {
+            ...item,
+            status: normalizedStatus,
+            history: this.buildSequentialHistory({ ...item, status: normalizedStatus })
+        };
+    }
+
+    normalizeStatus(status) {
+        return FinishedProductQueryPage.STATUS_MAP[status] || status;
+    }
+
+    normalizeNode(status, fallbackNode = '-') {
+        return FinishedProductQueryPage.NODE_MAP[status] || fallbackNode || '-';
+    }
+
+    buildSequentialHistory(item) {
+        const currentIndex = FinishedProductQueryPage.FLOW_SEQUENCE.indexOf(item.status);
+        if (currentIndex === -1) {
+            return [];
+        }
+
+        const statuses = FinishedProductQueryPage.FLOW_SEQUENCE.slice(0, currentIndex + 1);
+        const historyTimes = this.buildHistoryTimes(item, statuses.length);
+
+        return statuses.map((status, index) => ({
+            time: historyTimes[index],
+            updateTime: historyTimes[index],
+            status,
+            node: this.normalizeNode(status),
+            containerCode: item.containerCode,
+            area: this.getHistoryArea(item, status),
+            locationCode: this.getHistoryLocation(item, status),
+            remark: this.getHistoryRemark(status)
+        }));
+    }
+
+    buildHistoryTimes(item, count) {
+        const startValue = item.palletTime || item.lastUpdateTime;
+        const endValue = item.lastUpdateTime || startValue;
+        const startTime = this.parseDateTime(startValue);
+        const endTime = this.parseDateTime(endValue);
+
+        if (!startTime || !endTime) {
+            return Array.from({ length: count }, () => startValue || '-');
+        }
+
+        if (count === 1) {
+            return [this.formatDateTime(endTime)];
+        }
+
+        const totalDuration = Math.max(endTime.getTime() - startTime.getTime(), (count - 1) * 20 * 60 * 1000);
+        const step = totalDuration / (count - 1);
+
+        return Array.from({ length: count }, (_, index) => {
+            if (index === count - 1) {
+                return this.formatDateTime(endTime);
+            }
+
+            return this.formatDateTime(new Date(startTime.getTime() + step * index));
+        });
+    }
+
+    parseDateTime(value) {
+        if (!value) {
+            return null;
+        }
+
+        const parsed = new Date(value.replace(/-/g, '/'));
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    formatDateTime(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    getHistoryLocation(item, status) {
+        if (['待包装入平库', '待包装出平库', '已包装入平库', '已检入平库'].includes(status)) {
+            return item.flatLocationCode || item.locationCode || '-';
+        }
+
+        if (status === '已入立库') {
+            return item.warehouseLocationCode || item.locationCode || '-';
+        }
+
+        if (status === '发货出库') {
+            return item.shippingLocationCode || item.locationCode || '-';
+        }
+
+        return '-';
+    }
+
+    getHistoryArea(item, status) {
+        if (['待包装入平库', '待包装出平库', '已包装入平库', '已检入平库', '已入立库', '发货出库'].includes(status)) {
+            return item.area || '-';
+        }
+
+        return '-';
+    }
+
+    getHistoryRemark(status) {
+        const remarkMap = {
+            '待包装组盘': '待包装物料完成组盘',
+            '待包装入平库': '待包装物料执行入平库',
+            '待包装出平库': '待包装物料执行出平库',
+            '已包装组盘': '包装完成后重新组盘',
+            '已包装入平库': '已包装物料执行入平库',
+            '已包装出平库待检': '已包装物料出平库待检',
+            '检验中': '物料进入抽检流程',
+            '已检待入库': '抽检完成等待入库',
+            '已检入平库': '已检物料执行入平库',
+            '已入立库': '物料转运进入立库',
+            '发货出库': '物料完成发货出库'
+        };
+
+        return remarkMap[status] || '-';
     }
 
     bindEvents() {
@@ -406,15 +577,17 @@ class FinishedProductQueryPage {
 
     getStatusClass(status) {
         const statusMap = {
-            '待包装待入库': 'status-pending',
-            '待包装已入平库': 'status-flat',
-            '待包装已出平库': 'status-outbound',
-            '已包装待检': 'status-inspect',
+            '待包装组盘': 'status-pending',
+            '待包装入平库': 'status-flat',
+            '待包装出平库': 'status-outbound',
+            '已包装组盘': 'status-packaged',
+            '已包装入平库': 'status-flat',
+            '已包装出平库待检': 'status-inspect',
             '检验中': 'status-inspecting',
             '已检待入库': 'status-ready',
             '已检入平库': 'status-flat',
             '已入立库': 'status-warehouse',
-            '已发货': 'status-shipped'
+            '发货出库': 'status-shipped'
         };
 
         return statusMap[status] || 'status-pending';
@@ -446,39 +619,47 @@ class FinishedProductQueryPage {
 
         document.getElementById('historySummary').innerHTML = `
             <div class="detail-item">
-                <span class="detail-label">SN码</span>
+                <span class="detail-label">SN码：</span>
                 <span class="detail-value">${item.snCode}</span>
             </div>
             <div class="detail-item">
-                <span class="detail-label">物料编码</span>
+                <span class="detail-label">物料编码：</span>
                 <span class="detail-value">${item.materialCode}</span>
             </div>
             <div class="detail-item">
-                <span class="detail-label">物料名称</span>
+                <span class="detail-label">物料名称：</span>
                 <span class="detail-value">${item.materialName}</span>
             </div>
             <div class="detail-item">
-                <span class="detail-label">当前状态</span>
-                <span class="detail-value">${item.status}</span>
-            </div>
-            <div class="detail-item">
-                <span class="detail-label">当前容器</span>
+                <span class="detail-label">当前容器：</span>
                 <span class="detail-value">${item.containerCode}</span>
             </div>
             <div class="detail-item">
-                <span class="detail-label">最后更新时间</span>
+                <span class="detail-label">库区：</span>
+                <span class="detail-value">${item.area || '-'}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">库位编码：</span>
+                <span class="detail-value">${item.locationCode || '-'}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">最后更新时间：</span>
                 <span class="detail-value">${item.lastUpdateTime}</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">当前状态：</span>
+                <span class="history-status-badge status-badge ${this.getStatusClass(item.status)}">${item.status}</span>
             </div>
         `;
 
         document.getElementById('historyTableBody').innerHTML = item.history.map((record) => `
             <tr>
-                <td>${record.time}</td>
                 <td>${record.status}</td>
                 <td>${record.node}</td>
                 <td>${record.containerCode || '-'}</td>
+                <td>${record.area || '-'}</td>
                 <td>${record.locationCode || '-'}</td>
-                <td>${record.remark || '-'}</td>
+                <td>${record.updateTime || record.time || '-'}</td>
             </tr>
         `).join('');
 

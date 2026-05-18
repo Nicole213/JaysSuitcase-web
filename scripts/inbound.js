@@ -1,5 +1,7 @@
 // 入库单管理页面脚本
 
+const ENABLE_INSPECTION_INBOUND = false;
+
 // 模拟数据
 let inboundOrdersData = [
     {
@@ -7,9 +9,9 @@ let inboundOrdersData = [
         orderNo: 'RK-2024-0001',
         source: '客户WMS同步',
         upstreamNo: 'WMS-IN-20240115-001',
-        type: '成品入库',
+        type: '模具入库',
         materials: [
-            { code: 'WL-2024-001', name: '电子元件A型', plannedQty: 100, inboundQty: 100, portAisle: '1号巷道' }
+            { code: 'MJ-2024-001', name: '注塑模具A型', plannedQty: 12, inboundQty: 12, portAisle: '1号巷道' }
         ],
         status: '已完成',
         createTime: '2024-01-15 09:30:00',
@@ -21,9 +23,9 @@ let inboundOrdersData = [
         orderNo: 'RK-2024-0002',
         source: '手工创建',
         upstreamNo: '',
-        type: '模具入库',
+        type: '包装纸箱入库',
         materials: [
-            { code: 'WL-2024-002', name: '机械零件B型', plannedQty: 50, inboundQty: 30, portAisle: '1号巷道' }
+            { code: 'BZ-2024-002', name: '24寸拉杆箱包装纸箱', plannedQty: 200, inboundQty: 120, portAisle: '1号巷道' }
         ],
         status: '入库中',
         createTime: '2024-01-16 10:15:00',
@@ -35,11 +37,11 @@ let inboundOrdersData = [
         orderNo: 'RK-2024-0003',
         source: '手工创建',
         upstreamNo: 'PO-2024-003',
-        type: '辅材入库',
+        type: '包装纸箱入库',
         materials: [
-            { code: 'WL-2024-001', name: '电子元件A型', plannedQty: 80, inboundQty: 0, portAisle: '1号巷道' },
-            { code: 'WL-2024-003', name: '塑料配件C型', plannedQty: 60, inboundQty: 0, portAisle: '1号巷道' },
-            { code: 'WL-2024-005', name: '金属材料E型', plannedQty: 40, inboundQty: 0, portAisle: '1号巷道' }
+            { code: 'BZ-2024-003', name: '20寸登机箱包装纸箱', plannedQty: 150, inboundQty: 0, portAisle: '1号巷道' },
+            { code: 'BZ-2024-004', name: '28寸旅行箱包装纸箱', plannedQty: 90, inboundQty: 0, portAisle: '1号巷道' },
+            { code: 'BZ-2024-005', name: '配件内衬纸箱', plannedQty: 60, inboundQty: 0, portAisle: '1号巷道' }
         ],
         status: '待入库',
         createTime: '2024-01-17 14:20:00',
@@ -49,13 +51,13 @@ let inboundOrdersData = [
     {
         id: 4,
         orderNo: 'RK-2024-0004',
-        source: '客户WMS同步',
+        source: '系统自动创建',
         upstreamNo: 'WMS-IN-20240118-002',
-        type: '成品入库',
+        type: '成品抽检入库',
         materials: [
-            { code: 'WL-2024-004', name: '长物料钢材D型', plannedQty: 120, inboundQty: 60, portAisle: '2号巷道' }
+            { code: 'CP-2024-004', name: '商务箱成品D款', plannedQty: 8, inboundQty: 8, portAisle: '2号巷道' }
         ],
-        status: '入库中',
+        status: '已完成',
         createTime: '2024-01-18 11:00:00',
         canEdit: false,
         canDelete: false
@@ -143,9 +145,21 @@ const availablePallets = [
 
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
+    filteredData = getVisibleInboundOrders();
     renderTable();
     initEventListeners();
 });
+
+function isInspectionInboundType(type) {
+    return type === '成品抽检入库';
+}
+
+function getVisibleInboundOrders() {
+    if (ENABLE_INSPECTION_INBOUND) {
+        return [...inboundOrdersData];
+    }
+    return inboundOrdersData.filter(order => !isInspectionInboundType(order.type));
+}
 
 // 渲染表格
 function renderTable() {
@@ -160,7 +174,7 @@ function renderTable() {
         <tr>
             <td>${order.orderNo}</td>
             <td>
-                <span class="source-badge ${order.source === '客户WMS同步' ? 'sync' : 'manual'}">
+                <span class="source-badge ${getSourceClass(order.source)}">
                     ${order.source}
                 </span>
             </td>
@@ -178,8 +192,6 @@ function renderTable() {
             <td>${order.createTime}</td>
             <td>
                 <div class="action-btns">
-                    ${(order.status === '待入库' || order.status === '入库中') ? 
-                        `<button class="detail-btn" onclick="allocatePallet(${order.id})">分配托盘</button>` : ''}
                     <button class="detail-btn" onclick="showDetail(${order.id})">详情</button>
                     ${order.canEdit ? `<button class="edit-btn" onclick="editOrder(${order.id})">编辑</button>` : ''}
                     ${order.canDelete ? `<button class="delete-btn" onclick="deleteOrder(${order.id})">删除</button>` : ''}
@@ -201,6 +213,16 @@ function getStatusClass(status) {
         '已完成': 'completed'
     };
     return statusMap[status] || 'pending';
+}
+
+function getSourceClass(source) {
+    if (source === '客户WMS同步') {
+        return 'sync';
+    }
+    if (source === '系统自动创建') {
+        return 'system';
+    }
+    return 'manual';
 }
 
 // 更新分页
@@ -323,7 +345,7 @@ function searchOrders() {
     const startDate = document.getElementById('searchStartDate').value;
     const endDate = document.getElementById('searchEndDate').value;
     
-    filteredData = inboundOrdersData.filter(order => {
+    filteredData = getVisibleInboundOrders().filter(order => {
         const matchOrderNo = !orderNo || order.orderNo.toLowerCase().includes(orderNo);
         const matchUpstreamNo = !upstreamNo || order.upstreamNo.toLowerCase().includes(upstreamNo);
         const matchMaterialCode = !materialCode || order.materials.some(m => m.code.toLowerCase().includes(materialCode));
@@ -356,7 +378,7 @@ function resetSearch() {
     document.getElementById('searchType').value = '';
     document.getElementById('searchStartDate').value = '';
     document.getElementById('searchEndDate').value = '';
-    filteredData = [...inboundOrdersData];
+    filteredData = getVisibleInboundOrders();
     currentPage = 1;
     renderTable();
 }
@@ -788,6 +810,7 @@ function showDetail(id) {
     detailOrderId = id;
     const order = inboundOrdersData.find(o => o.id === id);
     if (!order) return;
+    const isInspectionInbound = order.type === '成品抽检入库';
     
     // 基本信息
     document.getElementById('detailOrderNo').textContent = order.orderNo;
@@ -806,63 +829,100 @@ function showDetail(id) {
         </tr>
     `).join('');
     
-    // 分配托盘记录（模拟数据）
+    // 组盘记录（模拟数据）
     const palletBody = document.getElementById('detailPalletBody');
-    palletBody.innerHTML = `
-        <tr>
-            <td>TP-001</td>
-            <td><span class="status-badge completed">已组盘</span></td>
-            <td>${order.materials[0].code}</td>
-            <td>${order.materials[0].name}</td>
-            <td>20</td>
-            <td>1-5-12-1</td>
-        </tr>
-        <tr>
-            <td>TP-002</td>
-            <td><span class="status-badge pending">未组盘</span></td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>入库口1</td>
-        </tr>
-    `;
+    const palletRecords = [];
+
+    if (isInspectionInbound && order.materials.length > 0) {
+        const material = order.materials[0];
+        palletRecords.push({
+            containerCode: `TP-CJ-${String(order.id).padStart(3, '0')}`,
+            statusText: '已入库',
+            statusClass: 'completed',
+            materialCode: material.code,
+            materialName: material.name,
+            actualQty: material.plannedQty
+        });
+    } else if (order.status === '已完成') {
+        order.materials.forEach((material, index) => {
+            const actualQty = Number(material.inboundQty || material.plannedQty || 0);
+            if (actualQty <= 0) return;
+
+            palletRecords.push({
+                containerCode: `TP-${String(order.id).padStart(3, '0')}-${String(index + 1).padStart(2, '0')}`,
+                statusText: '已入库',
+                statusClass: 'completed',
+                materialCode: material.code,
+                materialName: material.name,
+                actualQty
+            });
+        });
+    } else if (order.status === '入库中') {
+        order.materials.forEach((material, index) => {
+            const actualQty = Number(material.inboundQty || 0);
+            if (actualQty <= 0) return;
+
+            palletRecords.push({
+                containerCode: `TP-${String(order.id).padStart(3, '0')}-${String(index + 1).padStart(2, '0')}`,
+                statusText: '入库中',
+                statusClass: 'processing',
+                materialCode: material.code,
+                materialName: material.name,
+                actualQty
+            });
+        });
+    }
+
+    palletBody.innerHTML = palletRecords.length > 0
+        ? palletRecords.map(record => `
+            <tr>
+                <td>${record.containerCode}</td>
+                <td><span class="status-badge ${record.statusClass}">${record.statusText}</span></td>
+                <td>${record.materialCode}</td>
+                <td>${record.materialName}</td>
+                <td>${record.actualQty}</td>
+            </tr>
+        `).join('')
+        : `
+            <tr>
+                <td colspan="5">暂无组盘记录</td>
+            </tr>
+        `;
     
     // 入库任务（模拟数据）
     const taskBody = document.getElementById('detailTaskBody');
-    taskBody.innerHTML = `
-        <tr>
-            <td>TASK-${order.orderNo}-001</td>
-            <td>${order.orderNo}</td>
-            <td><span class="command-badge inbound">入库</span></td>
-            <td><span class="task-type-badge">普通入库</span></td>
-            <td>TP-001</td>
-            <td>${order.materials[0].code} - ${order.materials[0].name} × 20</td>
-            <td>-</td>
-            <td>1-5-12-1</td>
-            <td>1号入库口</td>
-            <td>-</td>
-            <td><span class="status-badge completed">已完成</span></td>
-            <td>2024-01-17 15:20:00</td>
-            <td>2024-01-17 15:25:00</td>
-            <td>2024-01-17 15:30:25</td>
-        </tr>
-        <tr>
-            <td>TASK-${order.orderNo}-002</td>
-            <td>${order.orderNo}</td>
-            <td><span class="command-badge inbound">入库</span></td>
-            <td><span class="task-type-badge">普通入库</span></td>
-            <td>TP-002</td>
-            <td>${order.materials[0].code} - ${order.materials[0].name} × 30</td>
-            <td>-</td>
-            <td>1-6-12-1</td>
-            <td>1号入库口</td>
-            <td>-</td>
-            <td><span class="status-badge processing">执行中</span></td>
-            <td>2024-01-17 15:25:00</td>
-            <td>2024-01-17 15:30:00</td>
-            <td>-</td>
-        </tr>
-    `;
+    taskBody.innerHTML = palletRecords.length > 0
+        ? palletRecords.map((record, index) => {
+            const inboundPort = order.materials[0]?.portAisle === '2号巷道' ? '2号入库口' : '1号入库口';
+            const taskType = isInspectionInbound ? '成品抽检入库' : '普通入库';
+            const pickupPort = isInspectionInbound ? '检验室1' : inboundPort;
+            const startTime = order.status === '待入库' ? '-' : order.createTime;
+            const endTime = record.statusText === '已入库' ? order.createTime : '-';
+
+            return `
+            <tr>
+                <td>TASK-${order.orderNo}-${String(index + 1).padStart(3, '0')}</td>
+                <td>${order.orderNo}</td>
+                <td><span class="command-badge inbound">入库</span></td>
+                <td><span class="task-type-badge">${taskType}</span></td>
+                <td>${record.containerCode}</td>
+                <td>${record.materialCode} - ${record.materialName} × ${record.actualQty}</td>
+                <td>-</td>
+                <td>${order.materials[0]?.portAisle === '2号巷道' ? '2-5-10-1' : '1-5-12-1'}</td>
+                <td>${pickupPort}</td>
+                <td>-</td>
+                <td><span class="status-badge ${record.statusClass}">${record.statusText}</span></td>
+                <td>${order.createTime}</td>
+                <td>${startTime}</td>
+                <td>${endTime}</td>
+            </tr>
+        `;
+        }).join('')
+        : `
+            <tr>
+                <td colspan="14">暂无入库任务</td>
+            </tr>
+        `;
     
     document.getElementById('detailModal').classList.add('active');
 }

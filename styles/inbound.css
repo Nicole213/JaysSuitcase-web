@@ -230,6 +230,11 @@
     color: #667eea;
 }
 
+.source-badge.system {
+    background: #e6fffb;
+    color: #08979c;
+}
+
 .source-badge.manual {
     background: #f5f5f5;
     color: #666;

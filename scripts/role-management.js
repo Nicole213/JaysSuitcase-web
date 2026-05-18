@@ -66,6 +66,24 @@ const systemMenus = [
         ]
     },
     {
+        id: 'report',
+        name: '信息报表',
+        icon: '📑',
+        children: [
+            { id: 'finished-product-query', name: '成品信息查询', permissions: ['查看', '导出'] }
+        ]
+    },
+    {
+        id: 'workorder',
+        name: '工单管理',
+        icon: '🧾',
+        children: [
+            { id: 'mes-work-order', name: 'MES生产工单', permissions: ['查看', '同步', '执行'] },
+            { id: 'finished-inspection-order', name: '成品抽检单', permissions: ['查看', '新增', '编辑', '删除', '分配出库', '取消抽检'] },
+            { id: 'erp-shipment', name: 'ERP发货单', permissions: ['查看', '同步', '暂停', '继续', '取消'] }
+        ]
+    },
+    {
         id: 'task',
         name: '任务管理',
         icon: '📋',
@@ -645,7 +663,12 @@ function getPermissionDescription(permission) {
         '启用': '可以启用用户',
         '重置密码': '可以重置用户密码',
         '权限配置': '可以配置角色权限',
-        '执行': '可以执行计划'
+        '执行': '可以执行计划',
+        '同步': '可以同步上游系统单据数据',
+        '暂停': '可以暂停当前业务单据执行',
+        '继续': '可以恢复已暂停的业务单据',
+        '分配出库': '可以为抽检单自动分配托盘并生成出库任务',
+        '取消抽检': '可以取消未执行的抽检单及对应出库任务'
     };
     return descriptions[permission] || '该权限的操作权限';
 }
