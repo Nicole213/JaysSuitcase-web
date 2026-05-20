@@ -25,25 +25,24 @@
                         <option value="">全部</option>
                         <option value="待执行">待执行</option>
                         <option value="执行中">执行中</option>
+                        <option value="已暂停">已暂停</option>
                         <option value="已完成">已完成</option>
                         <option value="已取消">已取消</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>同步时间：</label>
-                    <input type="date" class="filter-input-date" id="searchSyncStart">
-                    <span class="date-separator">至</span>
-                    <input type="date" class="filter-input-date" id="searchSyncEnd">
+                    <label>备料状态：</label>
+                    <select class="filter-select" id="searchPrepStatus">
+                        <option value="">全部</option>
+                        <option value="未备料">未备料</option>
+                        <option value="已备料">已备料</option>
+                    </select>
                 </div>
             </div>
             <div class="filter-row">
                 <div class="filter-group">
                     <label>待包装成品信息：</label>
                     <input type="text" class="filter-input wide" id="searchProductInfo" placeholder="请输入物料编码或名称">
-                </div>
-                <div class="filter-group">
-                    <label>执行人员：</label>
-                    <input type="text" class="filter-input" id="searchExecutor" placeholder="请输入执行人员">
                 </div>
                 <div class="filter-group">
                     <label>是否完成入库：</label>
@@ -58,22 +57,29 @@
             </div>
         </div>
 
+        <div class="table-toolbar">
+            <div class="toolbar-left">
+                <button class="primary-action-btn" id="sortOrdersBtn" disabled>工单排序</button>
+            </div>
+        </div>
+
         <div class="table-section">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th width="170">工单编号</th>
-                        <th width="100">工单状态</th>
-                        <th width="260">待包装成品信息</th>
-                        <th width="110">计划包装数量</th>
-                        <th width="110">已包装数量</th>
-                        <th width="160">同步时间</th>
-                        <th width="110">执行人员</th>
-                        <th width="160">执行开始时间</th>
-                        <th width="160">执行完成时间</th>
-                        <th width="130">待包装成品出库状态</th>
-                        <th width="120">成品入库状态</th>
-                        <th width="240">操作</th>
+                        <th width="44" class="selection-header">
+                            <input type="checkbox" id="selectPageEligible" class="selection-checkbox">
+                        </th>
+                        <th width="150">工单编号</th>
+                        <th width="88">工单状态</th>
+                        <th width="72">排序序号</th>
+                        <th width="86">备料状态</th>
+                        <th width="220">待包装成品信息</th>
+                        <th width="92">计划包装数量</th>
+                        <th width="92">已包装数量</th>
+                        <th width="136">执行开始时间</th>
+                        <th width="136">执行完成时间</th>
+                        <th width="180">操作</th>
                     </tr>
                 </thead>
                 <tbody id="workOrderTableBody"></tbody>
@@ -84,6 +90,30 @@
             <button class="page-btn" id="prevPage">上一页</button>
             <span class="page-info">第 <span id="currentPage">1</span> 页，共 <span id="totalPages">1</span> 页</span>
             <button class="page-btn" id="nextPage">下一页</button>
+        </div>
+    </div>
+
+    <div class="modal" id="sortModal">
+        <div class="modal-content modal-content-sort">
+            <div class="modal-header">
+                <h3>生产工单排序</h3>
+                <span class="modal-close" id="closeSortModal">&times;</span>
+            </div>
+            <div class="modal-body sort-modal-body">
+                <div class="sort-layout">
+                    <div class="sort-panel">
+                        <div class="sort-panel-header">
+                            <h4>本次排序工单</h4>
+                            <span>使用上移 / 下移调整本次确认顺序</span>
+                        </div>
+                        <div class="queue-list selected-list" id="sortSelectedList"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="cancelSortBtn">取消</button>
+                <button class="modal-btn primary" id="confirmSortBtn">确认排序</button>
+            </div>
         </div>
     </div>
 

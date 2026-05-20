@@ -1,15 +1,15 @@
 class FinishedInspectionOrderPage {
     constructor() {
         this.currentPage = 1;
-        this.pageSize = 8;
+        this.pageSize = 10;
         this.editingId = null;
         this.currentDetailId = null;
         this.labOptions = ['检验室1', '检验室2', '检验室3'];
         this.mesOptions = [
-            { no: 'MES-WO-20260514-001', productCode: 'CP-300101', productName: '20寸拉杆箱', totalPallets: 12 },
-            { no: 'MES-WO-20260514-002', productCode: 'CP-300205', productName: '商务双肩包', totalPallets: 8 },
-            { no: 'MES-WO-20260514-003', productCode: 'CP-300318', productName: '旅行收纳箱', totalPallets: 16 },
-            { no: 'MES-WO-20260514-004', productCode: 'CP-300422', productName: '儿童拉杆箱', totalPallets: 10 }
+            { no: 'SO-20260514-001', productCode: 'CP-300101', productName: '20寸拉杆箱', totalPallets: 12 },
+            { no: 'SO-20260514-002', productCode: 'CP-300205', productName: '商务双肩包', totalPallets: 8 },
+            { no: 'SO-20260514-003', productCode: 'CP-300318', productName: '旅行收纳箱', totalPallets: 16 },
+            { no: 'SO-20260514-004', productCode: 'CP-300422', productName: '儿童拉杆箱', totalPallets: 10 }
         ];
 
         this.statusMap = {
@@ -24,8 +24,6 @@ class FinishedInspectionOrderPage {
             '待回库': 'pending',
             '部分已回库': 'processing',
             '已回库': 'completed',
-            '待确认回库': 'processing',
-            '已确认回库': 'processing',
             '已完成': 'completed',
             '合格': 'completed',
             '待判定': 'pending'
@@ -62,13 +60,18 @@ class FinishedInspectionOrderPage {
         this.detailModal = document.getElementById('detailModal');
         this.snDetailModal = document.getElementById('snDetailModal');
         this.imagePreviewModal = document.getElementById('imagePreviewModal');
+        this.outboundDetailSection = document.getElementById('outboundDetailSection');
+        this.palletDetailSection = document.getElementById('palletDetailSection');
         this.modalTitle = document.getElementById('modalTitle');
         this.inspectionForm = document.getElementById('inspectionForm');
         this.inspectionNoInput = document.getElementById('inspectionNo');
         this.mesOrderNoInput = document.getElementById('mesOrderNo');
+        this.inspectionTypeInput = document.getElementById('inspectionType');
         this.materialDisplay = document.getElementById('materialDisplay');
         this.totalPalletsDisplay = document.getElementById('totalPalletsDisplay');
+        this.targetLabGroup = document.getElementById('targetLabGroup');
         this.targetLabInput = document.getElementById('targetLab');
+        this.palletCountGroup = document.getElementById('palletCountGroup');
         this.palletCountInput = document.getElementById('palletCount');
         this.inspectionRemarkInput = document.getElementById('inspectionRemark');
     }
@@ -98,6 +101,17 @@ class FinishedInspectionOrderPage {
         document.getElementById('closeImagePreviewModal').addEventListener('click', () => this.closeModal(this.imagePreviewModal));
         document.getElementById('closeImagePreviewBtn').addEventListener('click', () => this.closeModal(this.imagePreviewModal));
         this.mesOrderNoInput.addEventListener('change', () => this.updateMesRelatedFields(this.mesOrderNoInput.value));
+        this.inspectionTypeInput.addEventListener('change', () => {
+            this.syncInspectionTypePlaceholderState();
+            this.updateInspectionTypeFields(this.inspectionTypeInput.value);
+        });
+        this.inspectionTypeInput.addEventListener('mousedown', () => this.prepareInspectionTypeDropdown());
+        this.inspectionTypeInput.addEventListener('keydown', (event) => {
+            if (['ArrowDown', 'ArrowUp', 'Enter', ' '].includes(event.key)) {
+                this.prepareInspectionTypeDropdown();
+            }
+        });
+        this.inspectionTypeInput.addEventListener('blur', () => this.syncInspectionTypePlaceholderState());
 
         this.prevPageBtn.addEventListener('click', () => {
             if (this.currentPage > 1) {
@@ -128,7 +142,8 @@ class FinishedInspectionOrderPage {
             this.hydrateOrder({
                 id: 1,
                 inspectionNo: 'CJ-CJ-20260514-001',
-                mesOrderNo: 'MES-WO-20260514-001',
+                mesOrderNo: 'SO-20260514-001',
+                inspectionType: '检验室抽检',
                 productCode: 'CP-300101',
                 productName: '20寸拉杆箱',
                 targetLab: '检验室1',
@@ -136,7 +151,7 @@ class FinishedInspectionOrderPage {
                 status: '待分配',
                 createTime: '2026-05-14 08:30:00',
                 completeTime: '-',
-                remark: '首批成品抽检，关注拉杆结构与轮组顺滑度',
+                remark: '检验室抽检待分配，待系统分配出库容器',
                 outboundStarted: false,
                 outboundDetails: [],
                 inboundDetails: [],
@@ -145,37 +160,40 @@ class FinishedInspectionOrderPage {
             this.hydrateOrder({
                 id: 2,
                 inspectionNo: 'CJ-CJ-20260514-002',
-                mesOrderNo: 'MES-WO-20260514-002',
+                mesOrderNo: 'SO-20260514-002',
+                inspectionType: '检验室抽检',
                 productCode: 'CP-300205',
                 productName: '商务双肩包',
                 targetLab: '检验室2',
                 palletCount: 3,
                 status: '已分配',
-                outboundProgress: 'mixed',
+                outboundProgress: 'none',
                 createTime: '2026-05-14 09:05:00',
                 completeTime: '-',
-                remark: '抽检缝线与拉链一致性',
+                remark: '检验室抽检已分配，当前均待出库',
                 outboundStarted: false
             }),
             this.hydrateOrder({
                 id: 3,
                 inspectionNo: 'CJ-CJ-20260514-003',
-                mesOrderNo: 'MES-WO-20260514-003',
+                mesOrderNo: 'SO-20260514-003',
+                inspectionType: '检验室抽检',
                 productCode: 'CP-300318',
                 productName: '旅行收纳箱',
                 targetLab: '检验室3',
                 palletCount: 5,
                 status: '已分配',
-                outboundProgress: 'none',
+                outboundProgress: 'mixed',
                 createTime: '2026-05-14 09:20:00',
                 completeTime: '-',
-                remark: '容器已分配，尚未开始出库',
+                remark: '检验室抽检已分配，当前部分容器已出库',
                 outboundStarted: false
             }),
             this.hydrateOrder({
                 id: 4,
                 inspectionNo: 'CJ-CJ-20260514-004',
-                mesOrderNo: 'MES-WO-20260514-003',
+                mesOrderNo: 'SO-20260514-003',
+                inspectionType: '检验室抽检',
                 productCode: 'CP-300318',
                 productName: '旅行收纳箱',
                 targetLab: '检验室3',
@@ -184,13 +202,30 @@ class FinishedInspectionOrderPage {
                 outboundProgress: 'allOut',
                 createTime: '2026-05-14 09:40:00',
                 completeTime: '-',
-                remark: '抽检箱体外观与尺寸偏差，容器均已出库待检验',
+                remark: '检验室抽检待检验，容器均已出库',
                 outboundStarted: true
             }),
             this.hydrateOrder({
                 id: 5,
+                inspectionType: '现场抽检',
                 inspectionNo: 'CJ-CJ-20260514-005',
-                mesOrderNo: 'MES-WO-20260514-001',
+                mesOrderNo: 'SO-20260514-004',
+                productCode: 'CP-300422',
+                productName: '儿童拉杆箱',
+                status: '待检验',
+                createTime: '2026-05-14 10:05:00',
+                completeTime: '-',
+                remark: '现场抽检待检验，待现场执行抽检',
+                outboundStarted: false,
+                outboundDetails: [],
+                inboundDetails: [],
+                resultDetails: []
+            }),
+            this.hydrateOrder({
+                id: 6,
+                inspectionNo: 'CJ-CJ-20260514-006',
+                mesOrderNo: 'SO-20260514-001',
+                inspectionType: '检验室抽检',
                 productCode: 'CP-300101',
                 productName: '20寸拉杆箱',
                 targetLab: '检验室1',
@@ -201,81 +236,75 @@ class FinishedInspectionOrderPage {
                 completedInspectCount: 1,
                 createTime: '2026-05-14 10:15:00',
                 completeTime: '-',
-                remark: '现场正在复核拉杆耐久项目',
-                outboundStarted: true
-            }),
-            this.hydrateOrder({
-                id: 6,
-                inspectionNo: 'CJ-CJ-20260514-006',
-                mesOrderNo: 'MES-WO-20260514-004',
-                productCode: 'CP-300422',
-                productName: '儿童拉杆箱',
-                targetLab: '检验室2',
-                palletCount: 4,
-                status: '待确认回库',
-                outboundProgress: 'allOut',
-                resultProgress: 'full',
-                createTime: '2026-05-14 11:20:00',
-                completeTime: '-',
-                remark: '检验完成，待确认回库组盘',
+                remark: '检验室抽检进行中，正在复核拉杆耐久项目',
                 outboundStarted: true
             }),
             this.hydrateOrder({
                 id: 7,
                 inspectionNo: 'CJ-CJ-20260514-007',
-                mesOrderNo: 'MES-WO-20260514-002',
+                mesOrderNo: 'SO-20260514-002',
+                inspectionType: '现场抽检',
                 productCode: 'CP-300205',
                 productName: '商务双肩包',
-                targetLab: '检验室3',
-                palletCount: 3,
-                status: '已确认回库',
-                outboundProgress: 'allOut',
-                resultProgress: 'full',
-                inboundProgress: 'mixed',
-                createTime: '2026-05-14 07:50:00',
+                status: '检验中',
+                createTime: '2026-05-14 10:40:00',
                 completeTime: '-',
-                remark: '抽检通过，已确认组盘回库，部分容器已完成回库',
-                outboundStarted: true
+                remark: '现场抽检进行中，正在复核缝线与拉链一致性',
+                outboundStarted: false,
+                outboundDetails: [],
+                inboundDetails: [],
+                resultDetails: []
             }),
             this.hydrateOrder({
                 id: 8,
                 inspectionNo: 'CJ-CJ-20260514-008',
-                mesOrderNo: 'MES-WO-20260514-003',
+                mesOrderNo: 'SO-20260514-003',
+                inspectionType: '检验室抽检',
                 productCode: 'CP-300318',
                 productName: '旅行收纳箱',
-                targetLab: '检验室1',
-                palletCount: 2,
+                targetLab: '检验室3',
+                palletCount: 3,
                 status: '已完成',
                 outboundProgress: 'allOut',
                 resultProgress: 'full',
                 inboundProgress: 'allIn',
                 createTime: '2026-05-14 08:55:00',
                 completeTime: '2026-05-14 13:18:00',
-                remark: '任务已完成检验并回库',
+                remark: '检验室抽检已完成并回库',
                 outboundStarted: true
             }),
             this.hydrateOrder({
                 id: 9,
                 inspectionNo: 'CJ-CJ-20260514-009',
-                mesOrderNo: 'MES-WO-20260514-004',
+                mesOrderNo: 'SO-20260514-004',
+                inspectionType: '现场抽检',
                 productCode: 'CP-300422',
                 productName: '儿童拉杆箱',
-                targetLab: '检验室3',
-                palletCount: 3,
                 status: '已完成',
-                outboundProgress: 'allOut',
-                resultProgress: 'full',
-                inboundProgress: 'allIn',
-                createTime: '2026-05-14 07:50:00',
-                completeTime: '2026-05-14 12:45:00',
-                remark: '抽检通过，已完成回库',
-                outboundStarted: true
+                createTime: '2026-05-14 11:20:00',
+                completeTime: '2026-05-14 13:05:00',
+                remark: '现场抽检已完成',
+                outboundStarted: false,
+                outboundDetails: [],
+                inboundDetails: [],
+                resultDetails: []
             })
         ];
     }
 
     hydrateOrder(order) {
         const base = { ...order };
+
+        base.inspectionType = Object.prototype.hasOwnProperty.call(order, 'inspectionType')
+            ? this.normalizeInspectionType(base.inspectionType)
+            : '检验室抽检';
+        if (base.inspectionType === '现场抽检') {
+            base.targetLab = '';
+            base.palletCount = 0;
+        } else {
+            base.targetLab = base.targetLab || '';
+            base.palletCount = Number(base.palletCount) || 0;
+        }
 
         if (!base.outboundDetails || base.outboundDetails.length === 0) {
             base.outboundDetails = this.buildOutboundDetails(base);
@@ -304,7 +333,7 @@ class FinishedInspectionOrderPage {
         for (let index = 0; index < order.palletCount; index += 1) {
             let status = '待出库';
 
-            if (['待检验', '检验中', '待确认回库', '已确认回库', '已完成'].includes(order.status)) {
+            if (['待检验', '检验中', '已完成'].includes(order.status)) {
                 status = '已出库';
             } else if (order.status === '已分配') {
                 if (order.outboundProgress === 'mixed') {
@@ -331,7 +360,7 @@ class FinishedInspectionOrderPage {
     }
 
     buildInboundDetails(order) {
-        if (['待分配', '已分配', '待检验', '检验中', '待确认回库'].includes(order.status)) {
+        if (['待分配', '已分配', '待检验', '检验中'].includes(order.status)) {
             return [];
         }
 
@@ -369,36 +398,52 @@ class FinishedInspectionOrderPage {
             ['包装复核', '赵晨曦', '包装标签与实物一致']
         ];
         const failReasons = ['外观瑕疵', '尺寸不符', '配件缺失', '包装不合格', '其他'];
+        const isLabInspection = this.isLabInspection(order.inspectionType);
+        const palletReferences = isLabInspection
+            ? Array.from({ length: order.palletCount }, (_, index) => ({
+                palletCode: `TP-CJ-${order.id}${String(index + 1).padStart(2, '0')}`,
+                containerCode: `R${String(order.id).padStart(2, '0')}-CJ-${String(index + 1).padStart(2, '0')}`
+            }))
+            : this.buildRelatedPalletDetails(order).slice(0, order.status === '检验中' ? 1 : 2);
+        const totalResultTargets = palletReferences.length;
 
-        let resultCount = order.palletCount;
+        let resultCount = totalResultTargets;
         if (order.status === '检验中') {
-            resultCount = Math.min(order.completedInspectCount || Math.max(1, order.palletCount - 1), order.palletCount);
+            if (isLabInspection) {
+                resultCount = Math.min(order.completedInspectCount || Math.max(1, order.palletCount - 1), order.palletCount);
+            } else {
+                resultCount = Math.min(1, totalResultTargets);
+            }
         }
 
         return Array.from({ length: resultCount }, (_, index) => {
             const template = templates[index % templates.length];
-            const isInProgress = order.status === '检验中' && index === resultCount - 1 && resultCount < order.palletCount;
-            const isFailed = ['待确认回库', '已确认回库', '已完成'].includes(order.status) && order.id % 2 === 0 && index === resultCount - 1;
+            const palletReference = palletReferences[index] || {
+                palletCode: `TP-CJ-${order.id}${String(index + 1).padStart(2, '0')}`,
+                containerCode: `R${String(order.id).padStart(2, '0')}-CJ-${String(index + 1).padStart(2, '0')}`
+            };
+            const isInProgress = order.status === '检验中' && index === resultCount - 1 && resultCount < totalResultTargets;
+            const isFailed = order.status === '已完成' && order.id % 2 === 0 && index === resultCount - 1;
             const failReason = isFailed ? failReasons[index % failReasons.length] : '';
             const failPhotos = isFailed ? this.buildFailPhotos(order.id, index) : [];
 
             return {
-            seq: index + 1,
-            palletCode: `TP-CJ-${order.id}${String(index + 1).padStart(2, '0')}`,
-            containerCode: `R${String(order.id).padStart(2, '0')}-CJ-${String(index + 1).padStart(2, '0')}`,
-            checkItem: template[0],
-            result: isInProgress ? '待判定' : (isFailed ? '不合格' : '合格'),
-            inspector: template[1],
-            checkTime: ['待检验', '检验中', '待确认回库', '已确认回库', '已完成'].includes(order.status) ? `2026-05-14 ${String(10 + index).padStart(2, '0')}:2${index}:00` : '-',
-            description: isInProgress ? '当前容器检验进行中，结果待最终确认' : template[2],
-            failReason,
-            failPhotos,
-            snDetails: this.buildSnDetails(order, index, template, isInProgress, isFailed, failReason, failPhotos)
-        };
+                seq: index + 1,
+                palletCode: palletReference.palletCode,
+                containerCode: palletReference.containerCode,
+                checkItem: template[0],
+                result: isInProgress ? '待判定' : (isFailed ? '不合格' : '合格'),
+                inspector: template[1],
+                checkTime: ['检验中', '已完成'].includes(order.status) ? `2026-05-14 ${String(10 + index).padStart(2, '0')}:2${index}:00` : '-',
+                description: isInProgress ? '当前容器检验进行中，结果待最终确认' : template[2],
+                failReason,
+                failPhotos,
+                snDetails: this.buildSnDetails(order, index, template, isInProgress, isFailed, failReason, failPhotos, palletReference.containerCode)
+            };
         });
     }
 
-    buildSnDetails(order, index, template, isInProgress, isFailed, failReason, failPhotos) {
+    buildSnDetails(order, index, template, isInProgress, isFailed, failReason, failPhotos, containerCode) {
         return Array.from({ length: 4 }, (_, snIndex) => {
             const checkedCount = isInProgress ? 3 : 2;
             const isChecked = snIndex < checkedCount;
@@ -407,7 +452,7 @@ class FinishedInspectionOrderPage {
             return {
                 seq: snIndex + 1,
                 snCode: `SN-${order.id}${String(index + 1).padStart(2, '0')}-${String(snIndex + 1).padStart(3, '0')}`,
-                containerCode: `R${String(order.id).padStart(2, '0')}-CJ-${String(index + 1).padStart(2, '0')}`,
+                containerCode,
                 materialCode: order.productCode,
                 materialName: order.productName,
                 checkItem: isChecked ? template[0] : '',
@@ -463,10 +508,6 @@ class FinishedInspectionOrderPage {
             return '已回库';
         }
 
-        if (order.status === '已确认回库' && order.inboundProgress === 'mixed') {
-            return index < Math.ceil(order.palletCount / 2) ? '已回库' : '待回库';
-        }
-
         return '待回库';
     }
 
@@ -486,6 +527,72 @@ class FinishedInspectionOrderPage {
         this.materialDisplay.value = mesInfo ? `${mesInfo.productCode}-${mesInfo.productName}` : '';
         this.totalPalletsDisplay.value = mesInfo ? `${mesInfo.totalPallets}` : '';
         this.palletCountInput.max = mesInfo ? String(mesInfo.totalPallets) : '20';
+    }
+
+    normalizeInspectionType(inspectionType) {
+        if (inspectionType === '现场抽检' || inspectionType === '检验室抽检') {
+            return inspectionType;
+        }
+        return '';
+    }
+
+    isLabInspection(inspectionType) {
+        return inspectionType === '检验室抽检';
+    }
+
+    getInspectionTypePlaceholderOption() {
+        return this.inspectionTypeInput.querySelector('option[data-placeholder="true"]');
+    }
+
+    resetInspectionTypeSelection() {
+        const placeholder = this.getInspectionTypePlaceholderOption();
+        if (placeholder) {
+            placeholder.hidden = false;
+            placeholder.disabled = false;
+            placeholder.selected = true;
+        }
+
+        this.inspectionTypeInput.value = '';
+        this.syncInspectionTypePlaceholderState();
+    }
+
+    prepareInspectionTypeDropdown() {
+        const placeholder = this.getInspectionTypePlaceholderOption();
+        if (placeholder && !this.inspectionTypeInput.value) {
+            placeholder.hidden = true;
+            placeholder.disabled = true;
+        }
+    }
+
+    syncInspectionTypePlaceholderState() {
+        const placeholder = this.getInspectionTypePlaceholderOption();
+        if (!placeholder) {
+            return;
+        }
+
+        const hasSelection = Boolean(this.inspectionTypeInput.value);
+        placeholder.hidden = hasSelection;
+        placeholder.disabled = hasSelection;
+
+        if (!hasSelection) {
+            placeholder.hidden = false;
+            placeholder.disabled = false;
+            placeholder.selected = true;
+        }
+    }
+
+    updateInspectionTypeFields(inspectionType) {
+        const isLabInspection = this.isLabInspection(inspectionType);
+
+        this.targetLabGroup.classList.toggle('is-hidden', !isLabInspection);
+        this.palletCountGroup.classList.toggle('is-hidden', !isLabInspection);
+        this.targetLabInput.required = isLabInspection;
+        this.palletCountInput.required = isLabInspection;
+
+        if (!isLabInspection) {
+            this.targetLabInput.value = '';
+            this.palletCountInput.value = '';
+        }
     }
 
     applyFilters() {
@@ -537,7 +644,7 @@ class FinishedInspectionOrderPage {
         const pageData = this.filteredData.slice(startIndex, startIndex + this.pageSize);
 
         if (pageData.length === 0) {
-            this.tableBody.innerHTML = '<tr><td colspan="8" class="empty-row">暂无符合条件的成品抽检单</td></tr>';
+            this.tableBody.innerHTML = '<tr><td colspan="12" class="empty-row">暂无符合条件的成品抽检单</td></tr>';
         } else {
             this.tableBody.innerHTML = pageData.map((item) => `
                 <tr>
@@ -546,8 +653,9 @@ class FinishedInspectionOrderPage {
                     <td>${item.productCode}</td>
                     <td>${item.productName}</td>
                     <td>${this.getTotalPallets(item.mesOrderNo)}</td>
-                    <td>${item.palletCount} 托</td>
-                    <td>${item.targetLab}</td>
+                    <td>${this.getTableInspectionType(item)}</td>
+                    <td>${this.getTablePalletCount(item)}</td>
+                    <td>${this.getTableTargetLab(item)}</td>
                     <td>${this.renderStatusBadge(item.status)}</td>
                     <td>${item.createTime}</td>
                     <td>${item.completeTime || '-'}</td>
@@ -579,8 +687,6 @@ class FinishedInspectionOrderPage {
             '已出库': 'status-outbound-done',
             '待检验': 'status-wait-check',
             '检验中': 'status-checking',
-            '待确认回库': 'status-wait-confirm-return',
-            '已确认回库': 'status-confirmed-return',
             '待回库': 'status-wait-inbound',
             '部分已回库': 'status-part-inbound',
             '已回库': 'status-inbound-done',
@@ -611,6 +717,10 @@ class FinishedInspectionOrderPage {
             actions.push(`<button class="action-link warning" data-action="cancel" data-id="${item.id}">取消抽检</button>`);
         }
 
+        if (this.canCompleteInspection(item)) {
+            actions.push(`<button class="action-link success" data-action="complete-inspection" data-id="${item.id}">完成抽检</button>`);
+        }
+
         return `<div class="action-btns">${actions.join('')}</div>`;
     }
 
@@ -625,24 +735,35 @@ class FinishedInspectionOrderPage {
                 if (action === 'delete') this.deleteOrder(orderId);
                 if (action === 'allocate') this.allocateOrder(orderId);
                 if (action === 'cancel') this.cancelOrder(orderId);
+                if (action === 'complete-inspection') this.completeInspection(orderId);
             });
         });
     }
 
     canEdit(item) {
-        return item.status === '待分配';
+        return this.isLabInspection(item.inspectionType) && item.status === '待分配';
     }
 
     canDelete(item) {
-        return item.status === '待分配';
+        if (this.isLabInspection(item.inspectionType)) {
+            return item.status === '待分配';
+        }
+
+        return item.status === '待检验';
     }
 
     canAllocate(item) {
-        return item.status === '待分配';
+        return this.isLabInspection(item.inspectionType) && item.status === '待分配';
     }
 
     canCancel(item) {
-        return item.status === '已分配' && item.outboundDetails.every((detail) => detail.status === '待出库');
+        return this.isLabInspection(item.inspectionType)
+            && item.status === '已分配'
+            && item.outboundDetails.every((detail) => detail.status === '待出库');
+    }
+
+    canCompleteInspection(item) {
+        return item.status === '检验中';
     }
 
     openAddModal() {
@@ -650,6 +771,8 @@ class FinishedInspectionOrderPage {
         this.modalTitle.textContent = '新增成品抽检单';
         this.inspectionForm.reset();
         this.renderMesOptions();
+        this.resetInspectionTypeSelection();
+        this.updateInspectionTypeFields(this.inspectionTypeInput.value);
         this.inspectionNoInput.value = this.generateOrderNo();
         this.updateMesRelatedFields('');
         this.openModal(this.inspectionModal);
@@ -663,9 +786,14 @@ class FinishedInspectionOrderPage {
         this.modalTitle.textContent = '编辑成品抽检单';
         this.inspectionForm.reset();
         this.renderMesOptions(item.mesOrderNo);
+        this.inspectionTypeInput.value = this.normalizeInspectionType(item.inspectionType) || '检验室抽检';
+        this.syncInspectionTypePlaceholderState();
+        this.updateInspectionTypeFields(this.inspectionTypeInput.value);
         this.inspectionNoInput.value = item.inspectionNo;
-        this.targetLabInput.value = item.targetLab;
-        this.palletCountInput.value = item.palletCount;
+        if (this.isLabInspection(item.inspectionType)) {
+            this.targetLabInput.value = item.targetLab;
+            this.palletCountInput.value = item.palletCount;
+        }
         this.inspectionRemarkInput.value = item.remark || '';
         this.updateMesRelatedFields(item.mesOrderNo);
         this.openModal(this.inspectionModal);
@@ -674,25 +802,35 @@ class FinishedInspectionOrderPage {
     saveOrder() {
         const inspectionNo = this.inspectionNoInput.value.trim();
         const mesOrderNo = this.mesOrderNoInput.value;
+        const inspectionType = this.normalizeInspectionType(this.inspectionTypeInput.value);
         const targetLab = this.targetLabInput.value;
         const palletCount = Number(this.palletCountInput.value);
         const remark = this.inspectionRemarkInput.value.trim();
+        const isLabInspection = this.isLabInspection(inspectionType);
 
-        if (!inspectionNo || !mesOrderNo || !targetLab || !palletCount) {
+        if (!inspectionNo || !mesOrderNo || !inspectionType) {
             alert('请完整填写成品抽检单信息。');
+            return;
+        }
+
+        if (isLabInspection && (!targetLab || !palletCount)) {
+            alert('检验室抽检请完整填写目标检验室和抽检托数。');
             return;
         }
 
         const mesInfo = this.mesOptions.find((item) => item.no === mesOrderNo);
         if (!mesInfo) {
-            alert('请选择有效的MES生产工单。');
+            alert('请选择有效的关联订单。');
             return;
         }
 
-        if (palletCount > mesInfo.totalPallets) {
-            alert(`抽检托数不能大于该MES工单总托数 ${mesInfo.totalPallets}。`);
+        if (isLabInspection && palletCount > mesInfo.totalPallets) {
+            alert(`抽检托数不能大于该关联订单总托数 ${mesInfo.totalPallets}。`);
             return;
         }
+
+        const finalTargetLab = isLabInspection ? targetLab : '';
+        const finalPalletCount = isLabInspection ? palletCount : 0;
 
         if (this.editingId) {
             const target = this.orderData.find((item) => item.id === this.editingId);
@@ -700,23 +838,27 @@ class FinishedInspectionOrderPage {
 
             Object.assign(target, this.hydrateOrder({
                 ...target,
+                status: isLabInspection ? target.status : '待检验',
                 mesOrderNo,
+                inspectionType,
                 productCode: mesInfo.productCode,
                 productName: mesInfo.productName,
-                targetLab,
-                palletCount,
+                targetLab: finalTargetLab,
+                palletCount: finalPalletCount,
                 remark
             }));
         } else {
+            const newStatus = isLabInspection ? '待分配' : '待检验';
             const newOrder = this.hydrateOrder({
                 id: Date.now(),
                 inspectionNo,
                 mesOrderNo,
+                inspectionType,
                 productCode: mesInfo.productCode,
                 productName: mesInfo.productName,
-                targetLab,
-                palletCount,
-                status: '待分配',
+                targetLab: finalTargetLab,
+                palletCount: finalPalletCount,
+                status: newStatus,
                 createTime: this.formatNow(),
                 completeTime: '-',
                 remark,
@@ -734,7 +876,7 @@ class FinishedInspectionOrderPage {
     deleteOrder(id) {
         const item = this.orderData.find((order) => order.id === id);
         if (!item || !this.canDelete(item)) {
-            alert('仅待分配状态的成品抽检单允许删除。');
+            alert('仅检验室抽检待分配或现场抽检待检验状态的成品抽检单允许删除。');
             return;
         }
 
@@ -768,6 +910,33 @@ class FinishedInspectionOrderPage {
         alert('已自动分配抽检容器并生成对应出库任务。');
     }
 
+    completeInspection(id) {
+        const item = this.orderData.find((order) => order.id === id);
+        if (!item || !this.canCompleteInspection(item)) {
+            alert('当前状态不可执行完成抽检。');
+            return;
+        }
+
+        const isLabInspection = this.isLabInspection(item.inspectionType);
+        const updatedOrder = this.hydrateOrder({
+            ...item,
+            status: '已完成',
+            completeTime: this.formatNow(),
+            outboundStarted: isLabInspection ? true : item.outboundStarted,
+            outboundProgress: isLabInspection ? 'allOut' : item.outboundProgress,
+            resultProgress: isLabInspection ? 'full' : item.resultProgress,
+            inboundProgress: isLabInspection ? 'allIn' : item.inboundProgress,
+            completedInspectCount: isLabInspection ? item.palletCount : 0,
+            outboundDetails: [],
+            inboundDetails: [],
+            resultDetails: []
+        });
+
+        Object.assign(item, updatedOrder);
+        this.applyFilters();
+        alert('抽检单已完成抽检。');
+    }
+
     cancelOrder(id) {
         const item = this.orderData.find((order) => order.id === id);
         if (!item || !this.canCancel(item)) {
@@ -797,31 +966,33 @@ class FinishedInspectionOrderPage {
 
         this.currentDetailId = id;
         this.renderDetailSummary(item);
-        this.renderDetailTable('outboundDetailBody', item.outboundDetails, (detail) => `
-            <tr>
-                <td>${detail.seq}</td>
-                <td>${detail.containerCode}</td>
-                <td>${detail.materialCode}</td>
-                <td>${detail.materialName}</td>
-                <td>${detail.quantity}</td>
-                <td>${detail.sourceLocation}</td>
-                <td>${detail.taskNo}</td>
-                <td>${this.renderStatusBadge(detail.status)}</td>
-            </tr>
-        `, 8, '暂无抽检出库明细');
+        this.toggleDetailSections(item);
 
-        this.renderDetailTable('inboundDetailBody', item.inboundDetails, (detail) => `
-            <tr>
-                <td>${detail.seq}</td>
-                <td>${detail.containerCode}</td>
-                <td>${detail.materialCode}</td>
-                <td>${detail.materialName}</td>
-                <td>${detail.quantity}</td>
-                <td>${detail.targetLocation}</td>
-                <td>${detail.taskNo}</td>
-                <td>${this.renderStatusBadge(detail.status)}</td>
-            </tr>
-        `, 8, '暂无抽检入库明细');
+        if (this.isLabInspection(item.inspectionType)) {
+            this.renderDetailTable('outboundDetailBody', item.outboundDetails, (detail) => `
+                <tr>
+                    <td>${detail.seq}</td>
+                    <td>${detail.containerCode}</td>
+                    <td>${detail.materialCode}</td>
+                    <td>${detail.materialName}</td>
+                    <td>${detail.quantity}</td>
+                    <td>${detail.sourceLocation}</td>
+                    <td>${detail.taskNo}</td>
+                    <td>${this.renderStatusBadge(detail.status)}</td>
+                </tr>
+            `, 8, '暂无抽检出库明细');
+        } else {
+            this.renderDetailTable('palletDetailBody', this.buildRelatedPalletDetails(item), (detail) => `
+                <tr>
+                    <td>${detail.seq}</td>
+                    <td>${detail.containerCode}</td>
+                    <td>${detail.materialCode}</td>
+                    <td>${detail.materialName}</td>
+                    <td>${detail.storageChannelCode}</td>
+                    <td>${detail.locationCode}</td>
+                </tr>
+            `, 6, '暂无关联托盘信息');
+        }
 
         this.renderDetailTable('resultDetailBody', item.resultDetails, (detail) => `
             <tr>
@@ -840,6 +1011,32 @@ class FinishedInspectionOrderPage {
         this.openModal(this.detailModal);
         this.bindResultDetailActions();
         this.bindPhotoPreviewActions();
+    }
+
+    toggleDetailSections(item) {
+        const isLabInspection = this.isLabInspection(item.inspectionType);
+        this.outboundDetailSection.classList.toggle('is-hidden', !isLabInspection);
+        this.palletDetailSection.classList.toggle('is-hidden', isLabInspection);
+    }
+
+    buildRelatedPalletDetails(order) {
+        const mesInfo = this.mesOptions.find((item) => item.no === order.mesOrderNo);
+        const totalPallets = mesInfo ? mesInfo.totalPallets : 0;
+        const orderSuffix = order.mesOrderNo.split('-').pop() || String(order.id).padStart(3, '0');
+
+        return Array.from({ length: totalPallets }, (_, index) => {
+            const seq = index + 1;
+            const storageChannelCode = `CPK-${String((order.id % 4) + 1).padStart(2, '0')}-${String((index % 3) + 1).padStart(2, '0')}`;
+
+            return {
+                seq,
+                containerCode: `TP-${orderSuffix}-${String(seq).padStart(2, '0')}`,
+                materialCode: order.productCode,
+                materialName: order.productName,
+                storageChannelCode,
+                locationCode: `${storageChannelCode}-${String((index % 5) + 1).padStart(3, '0')}`
+            };
+        });
     }
 
     bindResultDetailActions() {
@@ -920,11 +1117,12 @@ class FinishedInspectionOrderPage {
     renderDetailSummary(item) {
         const summaryItems = [
             ['成品抽检单号', item.inspectionNo],
-            ['关联MES生产工单号', item.mesOrderNo],
+            ['关联订单号', item.mesOrderNo],
+            ['抽检类型', this.normalizeInspectionType(item.inspectionType)],
             ['成品信息', `${item.productCode} / ${item.productName}`],
             ['总托数', this.getTotalPallets(item.mesOrderNo)],
-            ['目标检验室', item.targetLab],
-            ['抽检托数', `${item.palletCount} 托`],
+            ['目标检验室', this.getDisplayTargetLab(item)],
+            ['抽检托数', this.getDisplayPalletCount(item)],
             ['状态', this.renderStatusBadge(item.status)],
             ['创建时间', item.createTime],
             ['完成时间', item.completeTime || '-'],
@@ -951,6 +1149,26 @@ class FinishedInspectionOrderPage {
     getTotalPallets(mesOrderNo) {
         const mesInfo = this.mesOptions.find((item) => item.no === mesOrderNo);
         return mesInfo ? `${mesInfo.totalPallets} 托` : '-';
+    }
+
+    getDisplayTargetLab(item) {
+        return this.isLabInspection(item.inspectionType) ? (item.targetLab || '-') : '-';
+    }
+
+    getDisplayPalletCount(item) {
+        return this.isLabInspection(item.inspectionType) && item.palletCount ? `${item.palletCount} 托` : '-';
+    }
+
+    getTableInspectionType(item) {
+        return this.normalizeInspectionType(item.inspectionType) || '';
+    }
+
+    getTableTargetLab(item) {
+        return this.isLabInspection(item.inspectionType) ? (item.targetLab || '') : '';
+    }
+
+    getTablePalletCount(item) {
+        return this.isLabInspection(item.inspectionType) && item.palletCount ? `${item.palletCount} 托` : '';
     }
 
     generateOrderNo() {

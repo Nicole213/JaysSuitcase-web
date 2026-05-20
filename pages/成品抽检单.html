@@ -20,8 +20,8 @@
                     <input type="text" class="filter-input" id="searchInspectionNo" placeholder="请输入成品抽检单号">
                 </div>
                 <div class="filter-group">
-                    <label>关联MES生产工单号：</label>
-                    <input type="text" class="filter-input wide" id="searchMesNo" placeholder="请输入MES生产工单号">
+                    <label>关联订单号：</label>
+                    <input type="text" class="filter-input wide" id="searchMesNo" placeholder="请输入关联订单号">
                 </div>
                 <div class="filter-group">
                     <label>状态：</label>
@@ -31,8 +31,6 @@
                         <option value="已分配">已分配</option>
                         <option value="待检验">待检验</option>
                         <option value="检验中">检验中</option>
-                        <option value="待确认回库">待确认回库</option>
-                        <option value="已确认回库">已确认回库</option>
                         <option value="已完成">已完成</option>
                     </select>
                 </div>
@@ -50,10 +48,11 @@
                 <thead>
                     <tr>
                         <th width="180">成品抽检单号</th>
-                        <th width="190">关联MES生产工单号</th>
+                        <th width="190">关联订单号</th>
                         <th width="140">物料编码</th>
                         <th width="180">物料名称</th>
                         <th width="100">总托数</th>
+                        <th width="120">抽检类型</th>
                         <th width="110">抽检托数</th>
                         <th width="160">目标检验室</th>
                         <th width="140">状态</th>
@@ -87,18 +86,26 @@
                             <input type="text" class="form-input" id="inspectionNo" readonly placeholder="系统自动生成">
                         </div>
                         <div class="form-group vertical">
-                            <label class="required">关联MES生产工单号</label>
+                            <label class="required">关联订单号</label>
                             <select class="form-input" id="mesOrderNo" required></select>
                         </div>
                         <div class="form-group vertical">
                             <label>物料编码/物料名称</label>
-                            <input type="text" class="form-input readonly-field" id="materialDisplay" readonly placeholder="选择工单后自动带出">
+                            <input type="text" class="form-input readonly-field" id="materialDisplay" readonly placeholder="选择订单后自动带出">
                         </div>
                         <div class="form-group vertical">
                             <label>总托数</label>
-                            <input type="text" class="form-input readonly-field" id="totalPalletsDisplay" readonly placeholder="选择工单后自动带出">
+                            <input type="text" class="form-input readonly-field" id="totalPalletsDisplay" readonly placeholder="选择订单后自动带出">
                         </div>
                         <div class="form-group vertical">
+                            <label class="required">抽检类型</label>
+                            <select class="form-input" id="inspectionType" required>
+                                <option value="" data-placeholder="true"></option>
+                                <option value="检验室抽检">检验室抽检</option>
+                                <option value="现场抽检">现场抽检</option>
+                            </select>
+                        </div>
+                        <div class="form-group vertical is-hidden" id="targetLabGroup">
                             <label class="required">目标检验室</label>
                             <select class="form-input" id="targetLab" required>
                                 <option value="">请选择</option>
@@ -107,7 +114,7 @@
                                 <option value="检验室3">检验室3</option>
                             </select>
                         </div>
-                        <div class="form-group vertical">
+                        <div class="form-group vertical is-hidden" id="palletCountGroup">
                             <label class="required">抽检托数</label>
                             <input type="number" class="form-input" id="palletCount" min="1" max="20" required placeholder="请输入托数">
                         </div>
@@ -137,7 +144,7 @@
                     <div class="detail-basic-grid" id="detailSummary"></div>
                 </div>
 
-                <div class="detail-section">
+                <div class="detail-section" id="outboundDetailSection">
                     <div class="detail-section-header">
                         <h4>抽检出库明细</h4>
                     </div>
@@ -158,9 +165,9 @@
                     </table>
                 </div>
 
-                <div class="detail-section">
+                <div class="detail-section is-hidden" id="palletDetailSection">
                     <div class="detail-section-header">
-                        <h4>抽检入库明细</h4>
+                        <h4>关联托盘信息</h4>
                     </div>
                     <table class="detail-table">
                         <thead>
@@ -169,13 +176,11 @@
                                 <th width="130">容器编码</th>
                                 <th width="140">物料编码</th>
                                 <th width="160">物料名称</th>
-                                <th width="100">回库数量</th>
-                                <th width="120">目标库位</th>
-                                <th width="140">回库任务号</th>
-                                <th width="120">状态</th>
+                                <th width="140">存储通道编码</th>
+                                <th width="140">库位编码</th>
                             </tr>
                         </thead>
-                        <tbody id="inboundDetailBody"></tbody>
+                        <tbody id="palletDetailBody"></tbody>
                     </table>
                 </div>
 

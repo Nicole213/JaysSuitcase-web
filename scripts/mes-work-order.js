@@ -1,360 +1,337 @@
 // MES生产工单页面脚本
 
 class MESWorkOrderPage {
-    static PALLET_CAPACITY = 20;
-    static MAX_PENDING_OUTBOUND_TASKS = 2;
     static SN_PREFIX = 'SN';
 
     constructor() {
         this.currentPage = 1;
         this.pageSize = 10;
-        this.workOrderData = this.buildMockData();
-        this.filteredData = [...this.workOrderData];
         this.currentDetailId = null;
+        this.selectedIds = new Set();
+        this.sortDraftIds = [];
+        this.workOrderData = this.buildMockData();
+        this.filteredData = [];
 
         this.init();
     }
 
     init() {
         this.bindEvents();
-        this.renderTable();
+        this.applyFilters({ resetPage: true });
     }
 
     buildMockData() {
-        const rawData = [
-            {
+        return [
+            this.createWorkOrder({
                 id: 1,
-                workOrderNo: 'MES-WO-20240501-001',
+                workOrderNo: 'MES-WO-20260520-001',
                 status: '待执行',
                 productInfos: [
-                    { materialCode: 'CP-2024-001', materialName: '20寸拉杆箱' },
-                    { materialCode: 'CP-2024-002', materialName: '商务双肩包' }
+                    { materialCode: 'CP-2026-001', materialName: '20寸拉杆箱' },
+                    { materialCode: 'CP-2026-002', materialName: '商务双肩包' }
                 ],
-                planQty: 320,
+                planQty: 48,
                 packedQty: 0,
-                syncTime: '2024-05-01 08:10:00',
+                syncTime: '2026-05-20 08:10:00',
                 executor: '张三',
-                startTime: '-',
-                completeTime: '-',
                 pendingOutboundStatus: '未出库',
                 inboundStatus: '未入库',
-                isPaused: false,
-                remark: '早班首批生产工单',
-                pendingOutboundDetails: [
-                    { seq: 1, containerCode: 'TP-2001', materialCode: 'CP-2024-001', materialName: '20寸拉杆箱', quantity: 180, areaCode: 'A01', locationCode: '1-1-1-1', status: '待出库', time: '-', targetLocation: '包装工位01', type: '待包装成品出库明细' },
-                    { seq: 2, containerCode: 'TP-2002', materialCode: 'CP-2024-002', materialName: '商务双肩包', quantity: 140, areaCode: 'A01', locationCode: '1-1-2-1', status: '待出库', time: '-', targetLocation: '包装工位02', type: '待包装成品出库明细' }
-                ],
-                materialOutboundDetails: [
-                    { seq: 1, containerCode: 'FC-1001', materialCode: 'FC-2024-001', materialName: '包装纸箱', quantity: 320, areaCode: 'B02', locationCode: '2-1-1-1', status: '待出库', time: '-', targetLocation: '辅材工位01', type: '包装辅材出库明细' },
-                    { seq: 2, containerCode: 'FC-1002', materialCode: 'FC-2024-002', materialName: '缓冲气泡袋', quantity: 320, areaCode: 'B02', locationCode: '2-1-2-1', status: '待出库', time: '-', targetLocation: '辅材工位01', type: '包装辅材出库明细' }
-                ],
-                inboundDetails: [
-                    { seq: 1, containerCode: 'IN-3001', materialCode: 'CP-2024-001', materialName: '20寸拉杆箱', quantity: 180, areaCode: 'C01', locationCode: '3-1-1-1', status: '待入库', time: '-', targetLocation: '成品缓存区01', type: '成品入库明细' },
-                    { seq: 2, containerCode: 'IN-3002', materialCode: 'CP-2024-002', materialName: '商务双肩包', quantity: 140, areaCode: 'C01', locationCode: '3-1-2-1', status: '待入库', time: '-', targetLocation: '成品缓存区02', type: '成品入库明细' }
-                ]
-            },
-            {
+                materialPrepStatus: '未备料',
+                remark: 'MES同步后待加入执行排序，当前不可开始工单。'
+            }),
+            this.createWorkOrder({
                 id: 2,
-                workOrderNo: 'MES-WO-20240501-002',
+                workOrderNo: 'MES-WO-20260520-002',
+                status: '待执行',
+                productInfos: [
+                    { materialCode: 'CP-2026-003', materialName: '登机箱' }
+                ],
+                planQty: 36,
+                packedQty: 0,
+                syncTime: '2026-05-20 08:26:00',
+                executor: '李四',
+                pendingOutboundStatus: '未出库',
+                inboundStatus: '未入库',
+                sortConfirmedAt: '2026-05-20 08:45:00',
+                sortSequence: 1,
+                materialPrepStatus: '备料完成',
+                prepStartTime: '2026-05-20 08:58:00',
+                prepCompleteTime: '2026-05-20 09:06:00',
+                remark: '待执行且已备料，可直接开始工单。'
+            }),
+            this.createWorkOrder({
+                id: 3,
+                workOrderNo: 'MES-WO-20260520-003',
+                status: '待执行',
+                productInfos: [
+                    { materialCode: 'CP-2026-004', materialName: '铝框箱' }
+                ],
+                planQty: 60,
+                packedQty: 0,
+                syncTime: '2026-05-20 08:32:00',
+                executor: '王五',
+                pendingOutboundStatus: '未出库',
+                inboundStatus: '未入库',
+                sortConfirmedAt: '2026-05-20 08:45:00',
+                sortSequence: 3,
+                materialPrepStatus: '未备料',
+                remark: '待执行、已排序、未备料，等待前序工单备料完成。'
+            }),
+            this.createWorkOrder({
+                id: 4,
+                workOrderNo: 'MES-WO-20260520-004',
                 status: '执行中',
                 productInfos: [
-                    { materialCode: 'CP-2024-003', materialName: '登机箱' }
+                    { materialCode: 'CP-2026-005', materialName: '旅行收纳包' },
+                    { materialCode: 'CP-2026-006', materialName: '硬壳化妆箱' }
                 ],
-                planQty: 320,
-                packedQty: 100,
-                syncTime: '2024-05-01 09:30:00',
-                executor: '李四',
-                startTime: '2024-05-01 10:00:00',
-                completeTime: '-',
+                planQty: 72,
+                packedQty: 30,
+                syncTime: '2026-05-20 08:40:00',
+                executor: '赵六',
+                startTime: '2026-05-20 09:30:00',
                 pendingOutboundStatus: '部分出库',
                 inboundStatus: '部分入库',
-                isPaused: false,
-                remark: '已包装100个，其中80个已入库、20个待入库；待包装成品出库任务最多预生成2条待出库记录',
-                detailScenario: [
-                    {
-                        materialCode: 'CP-2024-003',
-                        materialName: '登机箱',
-                        planQty: 320,
-                        outboundDoneQty: 100,
-                        packedQty: 100,
-                        inboundDoneQty: 80,
-                        outboundContainerCode: 'TP-2011',
-                        outboundAreaCode: 'A02',
-                        outboundLocationCode: '1-2-1-1',
-                        outboundTargetLocation: '包装工位03',
-                        outboundDoneTime: '2024-05-01 10:12:00',
-                        inboundContainerCode: 'IN-3011',
-                        inboundAreaCode: 'C02',
-                        inboundLocationCode: '3-2-1-1',
-                        inboundTargetLocation: '立库暂存位01',
-                        inboundDoneTime: '2024-05-01 13:20:00'
-                    }
-                ],
-                materialOutboundDetails: [
-                    { seq: 1, containerCode: 'FC-1011', materialCode: 'FC-2024-003', materialName: '保护套', quantity: 320, areaCode: 'B01', locationCode: '2-2-1-1', status: '已出库', time: '2024-05-01 10:08:00', targetLocation: '辅材工位02', type: '包装辅材出库明细' },
-                    { seq: 2, containerCode: 'FC-1012', materialCode: 'FC-2024-004', materialName: '吊牌', quantity: 320, areaCode: 'B01', locationCode: '2-2-2-1', status: '待出库', time: '-', targetLocation: '辅材工位02', type: '包装辅材出库明细' }
-                ]
-            },
-            {
-                id: 3,
-                workOrderNo: 'MES-WO-20240501-003',
-                status: '已完成',
-                productInfos: [
-                    { materialCode: 'CP-2024-004', materialName: '旅行收纳包' }
-                ],
-                planQty: 180,
-                packedQty: 180,
-                syncTime: '2024-05-01 11:00:00',
-                executor: '王五',
-                startTime: '2024-05-01 11:15:00',
-                completeTime: '2024-05-01 15:40:00',
-                pendingOutboundStatus: '全部出库',
-                inboundStatus: '全部入库',
-                isPaused: false,
-                remark: '当日已完成工单',
-                pendingOutboundDetails: [
-                    { seq: 1, containerCode: 'TP-2021', materialCode: 'CP-2024-004', materialName: '旅行收纳包', quantity: 180, areaCode: 'A03', locationCode: '1-3-1-1', status: '已出库', time: '2024-05-01 11:20:00', targetLocation: '包装工位04', type: '待包装成品出库明细' }
-                ],
-                materialOutboundDetails: [
-                    { seq: 1, containerCode: 'FC-1021', materialCode: 'FC-2024-005', materialName: '彩盒', quantity: 180, areaCode: 'B03', locationCode: '2-3-1-1', status: '已出库', time: '2024-05-01 11:18:00', targetLocation: '辅材工位03', type: '包装辅材出库明细' }
-                ],
-                inboundDetails: [
-                    { seq: 1, containerCode: 'IN-3021', materialCode: 'CP-2024-004', materialName: '旅行收纳包', quantity: 180, areaCode: 'C03', locationCode: '3-3-1-1', status: '已入库', time: '2024-05-01 15:15:00', targetLocation: '立库A-01-01', type: '成品入库明细' }
-                ]
-            },
-            {
-                id: 4,
-                workOrderNo: 'MES-WO-20240501-004',
-                status: '已取消',
-                productInfos: [
-                    { materialCode: 'CP-2024-005', materialName: '铝框箱' }
-                ],
-                planQty: 90,
-                packedQty: 0,
-                syncTime: '2024-05-01 14:10:00',
-                executor: '赵六',
-                startTime: '-',
-                completeTime: '-',
-                pendingOutboundStatus: '未出库',
-                inboundStatus: '未入库',
-                isPaused: false,
-                remark: 'MES撤销下发',
-                pendingOutboundDetails: [
-                    { seq: 1, containerCode: 'TP-2031', materialCode: 'CP-2024-005', materialName: '铝框箱', quantity: 90, areaCode: 'A04', locationCode: '1-4-1-1', status: '待出库', time: '-', targetLocation: '包装工位05', type: '待包装成品出库明细' }
-                ],
-                materialOutboundDetails: [
-                    { seq: 1, containerCode: 'FC-1031', materialCode: 'FC-2024-006', materialName: '拉链袋', quantity: 90, areaCode: 'B04', locationCode: '2-4-1-1', status: '待出库', time: '-', targetLocation: '辅材工位04', type: '包装辅材出库明细' }
-                ],
-                inboundDetails: [
-                    { seq: 1, containerCode: 'IN-3031', materialCode: 'CP-2024-005', materialName: '铝框箱', quantity: 90, areaCode: 'C04', locationCode: '3-4-1-1', status: '待入库', time: '-', targetLocation: '立库B-01-01', type: '成品入库明细' }
-                ]
-            },
-            {
+                sortConfirmedAt: '2026-05-20 08:45:00',
+                sortSequence: 2,
+                materialPrepStatus: '备料完成',
+                prepStartTime: '2026-05-20 09:20:00',
+                prepCompleteTime: '2026-05-20 09:28:00',
+                remark: '执行中且已备料，当前处于工单执行阶段。'
+            }),
+            this.createWorkOrder({
                 id: 5,
-                workOrderNo: 'MES-WO-20240502-001',
+                workOrderNo: 'MES-WO-20260520-005',
                 status: '待执行',
                 productInfos: [
-                    { materialCode: 'CP-2024-006', materialName: '儿童拉杆箱' },
-                    { materialCode: 'CP-2024-007', materialName: '硬壳化妆箱' }
+                    { materialCode: 'CP-2026-007', materialName: '儿童拉杆箱' }
                 ],
-                planQty: 240,
+                planQty: 30,
                 packedQty: 0,
-                syncTime: '2024-05-02 08:00:00',
-                executor: '张三',
-                startTime: '-',
-                completeTime: '-',
+                syncTime: '2026-05-20 09:05:00',
+                executor: '钱七',
                 pendingOutboundStatus: '未出库',
                 inboundStatus: '未入库',
-                isPaused: false,
-                remark: '跨物料组合工单',
-                pendingOutboundDetails: [
-                    { seq: 1, containerCode: 'TP-2041', materialCode: 'CP-2024-006', materialName: '儿童拉杆箱', quantity: 120, areaCode: 'A01', locationCode: '1-1-3-1', status: '待出库', time: '-', targetLocation: '包装工位06', type: '待包装成品出库明细' },
-                    { seq: 2, containerCode: 'TP-2042', materialCode: 'CP-2024-007', materialName: '硬壳化妆箱', quantity: 120, areaCode: 'A01', locationCode: '1-1-4-1', status: '待出库', time: '-', targetLocation: '包装工位06', type: '待包装成品出库明细' }
+                sortConfirmedAt: '2026-05-20 10:10:00',
+                sortSequence: 1,
+                materialPrepStatus: '未备料',
+                remark: '待执行、已排序、未备料，已进入后续排序批次。'
+            }),
+            this.createWorkOrder({
+                id: 6,
+                workOrderNo: 'MES-WO-20260519-006',
+                status: '已完成',
+                productInfos: [
+                    { materialCode: 'CP-2026-008', materialName: '旅行袋' }
                 ],
-                materialOutboundDetails: [
-                    { seq: 1, containerCode: 'FC-1041', materialCode: 'FC-2024-007', materialName: '珍珠棉', quantity: 240, areaCode: 'B02', locationCode: '2-1-3-1', status: '待出库', time: '-', targetLocation: '辅材工位05', type: '包装辅材出库明细' }
+                planQty: 24,
+                packedQty: 24,
+                syncTime: '2026-05-19 16:50:00',
+                executor: '孙八',
+                startTime: '2026-05-19 17:30:00',
+                completeTime: '2026-05-19 19:10:00',
+                pendingOutboundStatus: '全部出库',
+                inboundStatus: '全部入库',
+                sortConfirmedAt: '2026-05-19 17:20:00',
+                sortSequence: 1,
+                materialPrepStatus: '备料完成',
+                prepStartTime: '2026-05-19 17:22:00',
+                prepCompleteTime: '2026-05-19 17:35:00',
+                remark: '历史完成工单，用于展示已走完的排序批次。'
+            }),
+            this.createWorkOrder({
+                id: 7,
+                workOrderNo: 'MES-WO-20260520-007',
+                status: '已取消',
+                productInfos: [
+                    { materialCode: 'CP-2026-009', materialName: '电脑包' }
                 ],
-                inboundDetails: [
-                    { seq: 1, containerCode: 'IN-3041', materialCode: 'CP-2024-006', materialName: '儿童拉杆箱', quantity: 120, areaCode: 'C01', locationCode: '3-1-3-1', status: '待入库', time: '-', targetLocation: '成品缓存区03', type: '成品入库明细' },
-                    { seq: 2, containerCode: 'IN-3042', materialCode: 'CP-2024-007', materialName: '硬壳化妆箱', quantity: 120, areaCode: 'C01', locationCode: '3-1-4-1', status: '待入库', time: '-', targetLocation: '成品缓存区04', type: '成品入库明细' }
-                ]
-            }
-        ].map((item) => this.normalizeStorageCodes(item));
-
-        return rawData.map((item) => this.normalizeWorkOrderDetails(item));
+                planQty: 18,
+                packedQty: 0,
+                syncTime: '2026-05-20 09:18:00',
+                executor: '周九',
+                pendingOutboundStatus: '未出库',
+                inboundStatus: '未入库',
+                materialPrepStatus: '未备料',
+                remark: '未开始备料前取消。'
+            }),
+            this.createWorkOrder({
+                id: 8,
+                workOrderNo: 'MES-WO-20260519-008',
+                status: '待执行',
+                productInfos: [
+                    { materialCode: 'CP-2026-010', materialName: '公文箱' }
+                ],
+                planQty: 42,
+                packedQty: 0,
+                syncTime: '2026-05-19 17:08:00',
+                executor: '吴十',
+                pendingOutboundStatus: '未出库',
+                inboundStatus: '未入库',
+                materialPrepStatus: '未备料',
+                remark: '待执行、未排序、未备料，等待人工加入排序。'
+            })
+        ];
     }
 
-    normalizeStorageCodes(item) {
-        const normalizeDetails = (details = []) => details.map((detail) => {
-            const originalAreaCode = detail.areaCode;
+    createWorkOrder(config) {
+        const item = {
+            id: config.id,
+            workOrderNo: config.workOrderNo,
+            status: config.status,
+            productInfos: config.productInfos || [],
+            planQty: config.planQty || 0,
+            packedQty: config.packedQty || 0,
+            syncTime: config.syncTime || '',
+            executor: config.executor || '-',
+            startTime: config.startTime || '',
+            completeTime: config.completeTime || '',
+            pendingOutboundStatus: config.pendingOutboundStatus || '未出库',
+            inboundStatus: config.inboundStatus || '未入库',
+            isPaused: Boolean(config.isPaused),
+            sortConfirmedAt: config.sortConfirmedAt || '',
+            sortSequence: Number.isInteger(config.sortSequence) ? config.sortSequence : null,
+            materialPrepStatus: config.materialPrepStatus || '未备料',
+            prepStartTime: config.prepStartTime || '',
+            prepCompleteTime: config.prepCompleteTime || '',
+            remark: config.remark || ''
+        };
+
+        return this.syncDerivedFields(item);
+    }
+
+    syncDerivedFields(item) {
+        const hasQueueOrder = Boolean(item.sortConfirmedAt) && Number.isInteger(item.sortSequence);
+
+        if (!hasQueueOrder) {
+            item.sortConfirmedAt = '';
+            item.sortSequence = null;
+            item.materialPrepStatus = '未备料';
+            item.prepStartTime = '';
+            item.prepCompleteTime = '';
+        } else if (item.materialPrepStatus === '未备料') {
+            item.prepStartTime = '';
+            item.prepCompleteTime = '';
+        } else if (item.materialPrepStatus === '备料中') {
+            item.prepStartTime = item.prepStartTime || item.sortConfirmedAt;
+            item.prepCompleteTime = '';
+        } else if (item.materialPrepStatus === '备料完成') {
+            item.prepStartTime = item.prepStartTime || item.prepCompleteTime || item.sortConfirmedAt;
+            item.prepCompleteTime = item.prepCompleteTime || item.prepStartTime;
+        }
+
+        item.sortStatus = item.materialPrepStatus === '未备料'
+            ? (hasQueueOrder ? '已排序' : '未排序')
+            : '已锁定';
+
+        item.pendingOutboundDetails = this.buildPendingOutboundDetails(item);
+        item.materialOutboundDetails = this.buildMaterialOutboundDetails(item);
+        item.inboundDetails = this.buildInboundDetails(item);
+
+        return item;
+    }
+
+    buildPendingOutboundDetails(item) {
+        const quantities = this.distributeQty(item.planQty, item.productInfos.length);
+        const rows = item.productInfos.map((product, index) => {
+            const isDone = item.pendingOutboundStatus === '全部出库' ||
+                (item.pendingOutboundStatus === '部分出库' && index === 0);
 
             return {
-                ...detail,
-                areaCode: this.formatAreaCode(originalAreaCode),
-                locationCode: this.formatLocationCode(originalAreaCode, detail.locationCode)
+                containerCode: `TP-${String(item.id).padStart(3, '0')}-${String(index + 1).padStart(2, '0')}`,
+                materialCode: product.materialCode,
+                materialName: product.materialName,
+                quantity: quantities[index],
+                areaCode: this.buildAreaCode('A', item.id + index),
+                locationCode: this.buildLocationCode('A', item.id + index),
+                status: isDone ? '已出库' : '待出库',
+                time: isDone ? (item.startTime || item.completeTime || item.syncTime) : '',
+                targetLocation: `包装工位${String((item.id % 6) + 1).padStart(2, '0')}`
             };
         });
 
-        const normalizeScenario = (scenario) => ({
-            ...scenario,
-            outboundAreaCode: this.formatAreaCode(scenario.outboundAreaCode),
-            outboundLocationCode: this.formatLocationCode(scenario.outboundAreaCode, scenario.outboundLocationCode),
-            inboundAreaCode: this.formatAreaCode(scenario.inboundAreaCode),
-            inboundLocationCode: this.formatLocationCode(scenario.inboundAreaCode, scenario.inboundLocationCode)
-        });
-
-        return {
-            ...item,
-            pendingOutboundDetails: normalizeDetails(item.pendingOutboundDetails),
-            materialOutboundDetails: normalizeDetails(item.materialOutboundDetails),
-            inboundDetails: normalizeDetails(item.inboundDetails),
-            detailScenario: item.detailScenario ? item.detailScenario.map((scenario) => normalizeScenario(scenario)) : item.detailScenario
-        };
+        return this.createDetailRows(rows, '待包装成品出库明细', 'outbound');
     }
 
-    normalizeWorkOrderDetails(item) {
-        const detailData = item.detailScenario
-            ? this.buildScenarioDetails(item.detailScenario)
-            : {
-                pendingOutboundDetails: this.expandDetailsToPallets(item.pendingOutboundDetails),
-                inboundDetails: this.expandDetailsToPallets(item.inboundDetails)
+    buildMaterialOutboundDetails(item) {
+        const materials = [
+            { materialCode: 'FC-2026-001', materialName: '包装纸箱' },
+            { materialCode: 'FC-2026-002', materialName: '缓冲袋' }
+        ];
+
+        const rows = materials.map((material, index) => {
+            const isDone = item.materialPrepStatus === '备料完成' ||
+                (item.materialPrepStatus === '备料中' && index === 0);
+
+            const time = item.materialPrepStatus === '备料完成'
+                ? (item.prepCompleteTime || item.prepStartTime || item.sortConfirmedAt)
+                : (isDone ? (item.prepStartTime || item.sortConfirmedAt) : '');
+
+            return {
+                containerCode: `FC-${String(item.id).padStart(3, '0')}-${String(index + 1).padStart(2, '0')}`,
+                materialCode: material.materialCode,
+                materialName: material.materialName,
+                quantity: item.planQty,
+                areaCode: this.buildAreaCode('B', item.id + index),
+                locationCode: this.buildLocationCode('B', item.id + index),
+                status: isDone ? '已出库' : '待出库',
+                time,
+                targetLocation: `辅材工位${String((item.id % 5) + 1).padStart(2, '0')}`
             };
-
-        return {
-            ...item,
-            ...detailData,
-            pendingOutboundDetails: this.enrichDetailItems(this.limitPendingOutboundTasks(detailData.pendingOutboundDetails), 'outbound'),
-            materialOutboundDetails: this.enrichDetailItems(item.materialOutboundDetails, 'material'),
-            inboundDetails: this.enrichDetailItems(detailData.inboundDetails, 'inbound')
-        };
-    }
-
-    buildScenarioDetails(scenarios) {
-        return {
-            pendingOutboundDetails: this.buildScenarioRows(scenarios, 'outbound'),
-            inboundDetails: this.buildScenarioRows(scenarios, 'inbound')
-        };
-    }
-
-    buildScenarioRows(scenarios, category) {
-        let seq = 1;
-
-        return scenarios.flatMap((scenario) => {
-            const rows = category === 'outbound'
-                ? this.splitFlowRows({
-                    totalQty: scenario.planQty,
-                    doneQty: scenario.outboundDoneQty,
-                    containerCode: scenario.outboundContainerCode,
-                    materialCode: scenario.materialCode,
-                    materialName: scenario.materialName,
-                    areaCode: scenario.outboundAreaCode,
-                    locationCode: scenario.outboundLocationCode,
-                    doneTime: scenario.outboundDoneTime,
-                    pendingTime: '-',
-                    targetLocation: scenario.outboundTargetLocation,
-                    doneStatus: '已出库',
-                    pendingStatus: '待出库',
-                    type: '待包装成品出库明细'
-                })
-                : this.splitFlowRows({
-                    totalQty: scenario.packedQty,
-                    doneQty: scenario.inboundDoneQty,
-                    containerCode: scenario.inboundContainerCode,
-                    materialCode: scenario.materialCode,
-                    materialName: scenario.materialName,
-                    areaCode: scenario.inboundAreaCode,
-                    locationCode: scenario.inboundLocationCode,
-                    doneTime: scenario.inboundDoneTime,
-                    pendingTime: '-',
-                    targetLocation: scenario.inboundTargetLocation,
-                    doneStatus: '已入库',
-                    pendingStatus: '待入库',
-                    type: '成品入库明细'
-                });
-
-            return rows.map((row) => ({
-                ...row,
-                seq: seq++
-            }));
         });
+
+        return this.createDetailRows(rows, '包装辅材出库明细', 'material');
     }
 
-    splitFlowRows(config) {
-        if (!config.totalQty) {
-            return [];
-        }
-
-        let remainingTotal = config.totalQty;
-        let remainingDone = config.doneQty;
-        let index = 0;
+    buildInboundDetails(item) {
+        const quantities = this.distributeQty(item.planQty, item.productInfos.length);
+        const partialPacked = item.packedQty > 0 ? this.distributeQty(item.packedQty, item.productInfos.length) : [];
         const rows = [];
 
-        while (remainingTotal > 0) {
-            const rowQty = Math.min(MESWorkOrderPage.PALLET_CAPACITY, remainingTotal);
-            const isDone = remainingDone >= rowQty;
+        item.productInfos.forEach((product, index) => {
+            const doneQty = item.inboundStatus === '全部入库'
+                ? quantities[index]
+                : (item.inboundStatus === '部分入库' ? Math.min(partialPacked[index] || 0, quantities[index]) : 0);
+            const pendingQty = quantities[index] - doneQty;
 
-            rows.push({
-                containerCode: this.buildContainerCode(config.containerCode, index),
-                materialCode: config.materialCode,
-                materialName: config.materialName,
-                quantity: rowQty,
-                areaCode: config.areaCode,
-                locationCode: this.buildLocationCode(config.locationCode, index),
-                status: isDone ? config.doneStatus : config.pendingStatus,
-                time: isDone ? config.doneTime : config.pendingTime,
-                targetLocation: config.targetLocation,
-                type: config.type
-            });
-
-            remainingTotal -= rowQty;
-            remainingDone = Math.max(0, remainingDone - rowQty);
-            index += 1;
-        }
-
-        return rows;
-    }
-
-    expandDetailsToPallets(details) {
-        let seq = 1;
-
-        return details.flatMap((detail) => {
-            const palletCount = Math.ceil(detail.quantity / MESWorkOrderPage.PALLET_CAPACITY);
-
-            return Array.from({ length: palletCount }, (_, index) => {
-                const remainingQty = detail.quantity - index * MESWorkOrderPage.PALLET_CAPACITY;
-
-                return {
-                    ...detail,
-                    seq: seq++,
-                    containerCode: this.buildContainerCode(detail.containerCode, index),
-                    locationCode: this.buildLocationCode(detail.locationCode, index),
-                    quantity: Math.min(MESWorkOrderPage.PALLET_CAPACITY, remainingQty)
-                };
-            });
-        });
-    }
-
-    limitPendingOutboundTasks(details) {
-        let pendingCount = 0;
-
-        return details.filter((detail) => {
-            if (detail.status !== '待出库') {
-                return true;
+            if (doneQty > 0) {
+                rows.push({
+                    containerCode: `IN-${String(item.id).padStart(3, '0')}-${String(index + 1).padStart(2, '0')}-A`,
+                    materialCode: product.materialCode,
+                    materialName: product.materialName,
+                    quantity: doneQty,
+                    areaCode: this.buildAreaCode('C', item.id + index),
+                    locationCode: this.buildLocationCode('C', item.id + index),
+                    status: '已入库',
+                    time: item.completeTime || item.startTime || item.syncTime,
+                    targetLocation: `成品缓存区${String((item.id % 4) + 1).padStart(2, '0')}`
+                });
             }
 
-            if (pendingCount >= MESWorkOrderPage.MAX_PENDING_OUTBOUND_TASKS) {
-                return false;
+            if (pendingQty > 0) {
+                rows.push({
+                    containerCode: `IN-${String(item.id).padStart(3, '0')}-${String(index + 1).padStart(2, '0')}-B`,
+                    materialCode: product.materialCode,
+                    materialName: product.materialName,
+                    quantity: pendingQty,
+                    areaCode: this.buildAreaCode('C', item.id + index + 6),
+                    locationCode: this.buildLocationCode('C', item.id + index + 6),
+                    status: '待入库',
+                    time: '',
+                    targetLocation: `立库暂存位${String((item.id % 4) + 1).padStart(2, '0')}`
+                });
             }
-
-            pendingCount += 1;
-            return true;
         });
+
+        return this.createDetailRows(rows, '成品入库明细', 'inbound');
     }
 
-    enrichDetailItems(details, category) {
-        return details.map((detail, index) => ({
-            ...detail,
-            itemDetails: this.buildItemDetails(detail, category, index)
+    createDetailRows(rows, type, category) {
+        return rows.map((row, index) => ({
+            ...row,
+            seq: index + 1,
+            type,
+            itemDetails: this.buildItemDetails(row, category, index)
         }));
     }
 
@@ -383,77 +360,45 @@ class MESWorkOrderPage {
         return `${MESWorkOrderPage.SN_PREFIX}-${normalizedMaterialCode}-${categoryCode}-${detailSegment}${itemSegment}`;
     }
 
-    formatAreaCode(areaCode) {
-        const matchedPkArea = String(areaCode).match(/^PK(\d{3})$/);
-        if (matchedPkArea) {
-            return `PK${matchedPkArea[1]}`;
+    distributeQty(totalQty, parts) {
+        if (!parts || parts <= 0) {
+            return [];
         }
 
-        const matchedLegacyArea = String(areaCode).match(/^([A-Z])(\d{2})$/);
-        if (matchedLegacyArea) {
-            const prefix = matchedLegacyArea[1];
-            const value = Number(matchedLegacyArea[2]);
-            const prefixOffsetMap = {
-                A: 0,
-                B: 4,
-                C: 8
-            };
-            const offset = prefixOffsetMap[prefix] ?? 0;
+        const base = Math.floor(totalQty / parts);
+        const remainder = totalQty % parts;
 
-            return `PK${String(offset + value).padStart(3, '0')}`;
-        }
-
-        return `PK${String(areaCode).replace(/\D/g, '').padStart(3, '0').slice(-3) || '001'}`;
+        return Array.from({ length: parts }, (_, index) => base + (index < remainder ? 1 : 0));
     }
 
-    formatLocationCode(areaCode, locationCode) {
-        const formattedAreaCode = this.formatAreaCode(areaCode);
-        const matchedPkLocation = String(locationCode).match(/^PK\d{3}-(\d{2})-(\d{3})$/);
-        if (matchedPkLocation) {
-            return `${formattedAreaCode}-${matchedPkLocation[1]}-${matchedPkLocation[2]}`;
-        }
-
-        const segments = String(locationCode).split('-').map((segment) => Number(segment));
-        if (segments.length >= 4 && segments.every((segment) => !Number.isNaN(segment))) {
-            const lane = String(segments[1]).padStart(2, '0');
-            const slot = String((segments[2] - 1) * 10 + segments[3]).padStart(3, '0');
-
-            return `${formattedAreaCode}-${lane}-${slot}`;
-        }
-
-        return `${formattedAreaCode}-01-001`;
+    buildAreaCode(prefix, index) {
+        const baseMap = {
+            A: 101,
+            B: 201,
+            C: 301
+        };
+        const baseValue = baseMap[prefix] || 101;
+        return `PK${String(baseValue + index).padStart(3, '0')}`;
     }
 
-    buildContainerCode(containerCode, index) {
-        return `${containerCode}-${String(index + 1).padStart(2, '0')}`;
-    }
-
-    buildLocationCode(locationCode, index) {
-        const matchedPkLocation = String(locationCode).match(/^(PK\d{3})-(\d{2})-(\d{3})$/);
-        if (matchedPkLocation) {
-            const nextSlot = String(Number(matchedPkLocation[3]) + index).padStart(3, '0');
-            return `${matchedPkLocation[1]}-${matchedPkLocation[2]}-${nextSlot}`;
-        }
-
-        const segments = String(locationCode).split('-');
-        if (!segments.length) {
-            return locationCode;
-        }
-
-        const lastSegment = Number(segments[segments.length - 1]);
-        if (Number.isNaN(lastSegment)) {
-            return `${locationCode}-${index + 1}`;
-        }
-
-        segments[segments.length - 1] = String(lastSegment + index);
-        return segments.join('-');
+    buildLocationCode(prefix, index) {
+        const areaCode = this.buildAreaCode(prefix, index);
+        const lane = String((index % 8) + 1).padStart(2, '0');
+        const slot = String((index % 24) + 1).padStart(3, '0');
+        return `${areaCode}-${lane}-${slot}`;
     }
 
     bindEvents() {
-        document.getElementById('searchBtn').addEventListener('click', () => this.search());
+        document.getElementById('searchBtn').addEventListener('click', () => this.applyFilters({ resetPage: true }));
         document.getElementById('resetBtn').addEventListener('click', () => this.resetSearch());
         document.getElementById('prevPage').addEventListener('click', () => this.goToPage(this.currentPage - 1));
         document.getElementById('nextPage').addEventListener('click', () => this.goToPage(this.currentPage + 1));
+        document.getElementById('sortOrdersBtn').addEventListener('click', () => this.openSortModal());
+        document.getElementById('selectPageEligible').addEventListener('change', (event) => this.toggleSelectAllCurrentPage(event.target.checked));
+
+        document.getElementById('closeSortModal').addEventListener('click', () => this.hideSortModal());
+        document.getElementById('cancelSortBtn').addEventListener('click', () => this.hideSortModal());
+        document.getElementById('confirmSortBtn').addEventListener('click', () => this.confirmSort());
 
         document.getElementById('detailModal').addEventListener('click', (event) => {
             if (event.target.id === 'detailModal') {
@@ -465,6 +410,11 @@ class MESWorkOrderPage {
                 this.hideItemDetailModal();
             }
         });
+        document.getElementById('sortModal').addEventListener('click', (event) => {
+            if (event.target.id === 'sortModal') {
+                this.hideSortModal();
+            }
+        });
 
         document.getElementById('closeDetailModal').addEventListener('click', () => this.hideDetailModal());
         document.getElementById('closeDetailBtn').addEventListener('click', () => this.hideDetailModal());
@@ -474,64 +424,65 @@ class MESWorkOrderPage {
         [
             'searchWorkOrderNo',
             'searchProductInfo',
-            'searchExecutor'
         ].forEach((id) => {
             document.getElementById(id).addEventListener('keypress', (event) => {
                 if (event.key === 'Enter') {
-                    this.search();
+                    this.applyFilters({ resetPage: true });
                 }
             });
         });
-    }
-
-    search() {
-        const workOrderNo = document.getElementById('searchWorkOrderNo').value.trim().toLowerCase();
-        const status = document.getElementById('searchStatus').value;
-        const syncStart = document.getElementById('searchSyncStart').value;
-        const syncEnd = document.getElementById('searchSyncEnd').value;
-        const productInfo = document.getElementById('searchProductInfo').value.trim().toLowerCase();
-        const executor = document.getElementById('searchExecutor').value.trim().toLowerCase();
-        const inboundCompleted = document.getElementById('searchInboundCompleted').value;
-
-        this.filteredData = this.workOrderData.filter((item) => {
-            const matchWorkOrderNo = !workOrderNo || item.workOrderNo.toLowerCase().includes(workOrderNo);
-            const matchStatus = !status || item.status === status;
-            const matchSyncTime = this.matchesDateRange(item.syncTime, syncStart, syncEnd);
-            const matchProductInfo = !productInfo || item.productInfos.some((product) =>
-                product.materialCode.toLowerCase().includes(productInfo) ||
-                product.materialName.toLowerCase().includes(productInfo)
-            );
-            const matchExecutor = !executor || item.executor.toLowerCase().includes(executor);
-            const inboundCompletedValue = item.inboundStatus === '全部入库' ? '是' : '否';
-            const matchInboundCompleted = !inboundCompleted || inboundCompletedValue === inboundCompleted;
-
-            return matchWorkOrderNo &&
-                matchStatus &&
-                matchSyncTime &&
-                matchProductInfo &&
-                matchExecutor &&
-                matchInboundCompleted;
-        });
-
-        this.currentPage = 1;
-        this.renderTable();
     }
 
     resetSearch() {
         [
             'searchWorkOrderNo',
             'searchStatus',
-            'searchSyncStart',
-            'searchSyncEnd',
+            'searchPrepStatus',
             'searchProductInfo',
-            'searchExecutor',
             'searchInboundCompleted'
         ].forEach((id) => {
             document.getElementById(id).value = '';
         });
 
-        this.filteredData = [...this.workOrderData];
-        this.currentPage = 1;
+        this.applyFilters({ resetPage: true });
+    }
+
+    applyFilters({ resetPage = false } = {}) {
+        const workOrderNo = document.getElementById('searchWorkOrderNo').value.trim().toLowerCase();
+        const status = document.getElementById('searchStatus').value;
+        const prepStatus = document.getElementById('searchPrepStatus').value;
+        const productInfo = document.getElementById('searchProductInfo').value.trim().toLowerCase();
+        const inboundCompleted = document.getElementById('searchInboundCompleted').value;
+
+        this.filteredData = this.sortWorkOrders(this.workOrderData.filter((item) => {
+            const matchWorkOrderNo = !workOrderNo || item.workOrderNo.toLowerCase().includes(workOrderNo);
+            const matchStatus = !status || item.status === status;
+            const matchPrepStatus = !prepStatus || this.getPrepStatusText(item.materialPrepStatus) === prepStatus;
+            const matchProductInfo = !productInfo || item.productInfos.some((product) =>
+                product.materialCode.toLowerCase().includes(productInfo) ||
+                product.materialName.toLowerCase().includes(productInfo)
+            );
+            const inboundCompletedValue = item.inboundStatus === '全部入库' ? '是' : '否';
+            const matchInboundCompleted = !inboundCompleted || inboundCompletedValue === inboundCompleted;
+
+            return matchWorkOrderNo &&
+                matchStatus &&
+                matchPrepStatus &&
+                matchProductInfo &&
+                matchInboundCompleted;
+        }));
+
+        this.sanitizeSelection();
+
+        if (resetPage) {
+            this.currentPage = 1;
+        }
+
+        const totalPages = Math.ceil(this.filteredData.length / this.pageSize) || 1;
+        if (this.currentPage > totalPages) {
+            this.currentPage = totalPages;
+        }
+
         this.renderTable();
     }
 
@@ -548,16 +499,104 @@ class MESWorkOrderPage {
         return (!start || datePart >= start) && (!end || datePart <= end);
     }
 
+    sanitizeSelection() {
+        [...this.selectedIds].forEach((id) => {
+            const item = this.workOrderData.find((record) => record.id === id);
+            if (!item || !this.canSelectForSorting(item)) {
+                this.selectedIds.delete(id);
+            }
+        });
+    }
+
+    isActiveQueueItem(item) {
+        return this.hasQueueOrder(item) && !['已完成', '已取消'].includes(item.status);
+    }
+
+    getQueuedItems() {
+        return [...this.workOrderData]
+            .filter((item) => this.hasQueueOrder(item) && item.status !== '已取消')
+            .sort((a, b) => this.compareQueueOrder(a, b));
+    }
+
+    compareQueueOrder(a, b) {
+        if (a.sortConfirmedAt !== b.sortConfirmedAt) {
+            return a.sortConfirmedAt.localeCompare(b.sortConfirmedAt);
+        }
+
+        if (a.sortSequence !== b.sortSequence) {
+            return a.sortSequence - b.sortSequence;
+        }
+
+        if (a.syncTime !== b.syncTime) {
+            return a.syncTime.localeCompare(b.syncTime);
+        }
+
+        return a.id - b.id;
+    }
+
+    getActiveQueueItems() {
+        return this.getQueuedItems().filter((item) => this.isActiveQueueItem(item));
+    }
+
+    getDisplaySortOrderMap() {
+        const orderMap = new Map();
+        this.getActiveQueueItems().forEach((item, index) => {
+            orderMap.set(item.id, index + 1);
+        });
+        return orderMap;
+    }
+
+    getCurrentPrepItem() {
+        const activeQueueItems = this.getActiveQueueItems();
+        const preparingItem = activeQueueItems.find((item) => item.materialPrepStatus === '备料中');
+        if (preparingItem) {
+            return preparingItem;
+        }
+
+        return activeQueueItems.find((item) => item.materialPrepStatus === '未备料') || null;
+    }
+
+    sortWorkOrders(records) {
+        return [...records].sort((a, b) => {
+            const aOpen = !['已完成', '已取消'].includes(a.status);
+            const bOpen = !['已完成', '已取消'].includes(b.status);
+
+            if (aOpen !== bOpen) {
+                return aOpen ? -1 : 1;
+            }
+
+            const aHasQueue = this.hasQueueOrder(a);
+            const bHasQueue = this.hasQueueOrder(b);
+
+            if (aHasQueue && bHasQueue) {
+                return this.compareQueueOrder(a, b);
+            }
+
+            if (aHasQueue !== bHasQueue) {
+                return aHasQueue ? -1 : 1;
+            }
+
+            if (a.syncTime !== b.syncTime) {
+                return b.syncTime.localeCompare(a.syncTime);
+            }
+
+            return b.id - a.id;
+        });
+    }
+
+    hasQueueOrder(item) {
+        return Boolean(item.sortConfirmedAt) && Number.isInteger(item.sortSequence);
+    }
+
     renderTable() {
         const tbody = document.getElementById('workOrderTableBody');
-        const start = (this.currentPage - 1) * this.pageSize;
-        const end = start + this.pageSize;
-        const pageData = this.filteredData.slice(start, end);
+        const pageData = this.getCurrentPageData();
+        const displayOrderMap = this.getDisplaySortOrderMap();
 
         if (!pageData.length) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="12">
+                    <td colspan="11">
                         <div class="empty-state">
                             <div class="empty-icon">🧾</div>
                             <div class="empty-text">暂无工单数据</div>
@@ -567,29 +606,48 @@ class MESWorkOrderPage {
                 </tr>
             `;
             this.updatePagination();
+            this.updateSelectionSummary();
             return;
         }
 
-        tbody.innerHTML = pageData.map((item) => `
-            <tr>
-                <td><button class="workorder-link" data-action="view" data-id="${item.id}">${item.workOrderNo}</button></td>
-                <td><span class="status-badge ${this.getWorkOrderStatusClass(item.status)}">${item.status}</span></td>
-                <td class="product-summary">${this.renderProductSummary(item.productInfos)}</td>
-                <td>${item.planQty}</td>
-                <td>${item.packedQty}</td>
-                <td>${item.syncTime}</td>
-                <td>${item.executor}</td>
-                <td>${item.startTime}</td>
-                <td>${item.completeTime}</td>
-                <td><span class="progress-badge ${this.getFlowStatusClass(item.pendingOutboundStatus)}">${item.pendingOutboundStatus}</span></td>
-                <td><span class="progress-badge ${this.getFlowStatusClass(item.inboundStatus)}">${item.inboundStatus}</span></td>
-                <td>
-                    <div class="action-btns">
-                        ${this.renderActionButtons(item)}
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = pageData.map((item) => {
+            const disabled = !this.canSelectForSorting(item);
+            const checked = this.selectedIds.has(item.id);
+
+            return `
+                <tr>
+                    <td class="selection-cell">
+                        <input
+                            type="checkbox"
+                            class="selection-checkbox row-select"
+                            data-id="${item.id}"
+                            ${checked ? 'checked' : ''}
+                            ${disabled ? 'disabled' : ''}
+                        >
+                    </td>
+                    <td><button class="workorder-link" data-action="view" data-id="${item.id}">${item.workOrderNo}</button></td>
+                    <td><span class="status-badge ${this.getWorkOrderStatusClass(item.status)}">${this.getWorkOrderStatusText(item)}</span></td>
+                    <td>${this.renderSortSequence(displayOrderMap.get(item.id))}</td>
+                    <td><span class="prep-badge ${this.getPrepStatusClass(item.materialPrepStatus)}">${this.getPrepStatusText(item.materialPrepStatus)}</span></td>
+                    <td class="product-summary">${this.renderProductSummary(item.productInfos)}</td>
+                    <td>${item.planQty}</td>
+                    <td>${item.packedQty}</td>
+                    <td>${this.formatDisplayTime(item.startTime)}</td>
+                    <td>${this.formatDisplayTime(item.completeTime)}</td>
+                    <td>
+                        <div class="action-btns">
+                            ${this.renderActionButtons(item)}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        tbody.querySelectorAll('.row-select').forEach((checkbox) => {
+            checkbox.addEventListener('change', () => {
+                this.toggleRowSelection(Number(checkbox.dataset.id), checkbox.checked);
+            });
+        });
 
         tbody.querySelectorAll('[data-action]').forEach((button) => {
             const id = Number(button.dataset.id);
@@ -611,6 +669,20 @@ class MESWorkOrderPage {
         });
 
         this.updatePagination();
+        this.updateSelectionSummary();
+    }
+
+    getCurrentPageData() {
+        const start = (this.currentPage - 1) * this.pageSize;
+        const end = start + this.pageSize;
+        return this.filteredData.slice(start, end);
+    }
+
+    renderSortSequence(sequence) {
+        if (!Number.isInteger(sequence)) {
+            return '<span class="sort-order-empty">-</span>';
+        }
+        return `<span class="sort-order-value">${sequence}</span>`;
     }
 
     renderProductSummary(productInfos) {
@@ -622,27 +694,100 @@ class MESWorkOrderPage {
     renderActionButtons(item) {
         const actions = [];
 
-        if (item.status === '待执行') {
+        if (this.canStartWorkOrder(item)) {
             actions.push(`<button class="action-link primary" data-action="start" data-id="${item.id}">开始工单</button>`);
-            actions.push(`<button class="action-link danger" data-action="cancel" data-id="${item.id}">取消工单</button>`);
         }
 
-        if (item.status === '执行中') {
+        if (this.canTogglePause(item)) {
             actions.push(`<button class="action-link warning" data-action="toggle-pause" data-id="${item.id}">${item.isPaused ? '继续工单' : '暂停工单'}</button>`);
+        }
+
+        if (this.canCompleteWorkOrder(item)) {
             actions.push(`<button class="action-link success" data-action="complete" data-id="${item.id}">完成工单</button>`);
         }
 
+        if (this.canCancelWorkOrder(item)) {
+            actions.push(`<button class="action-link danger" data-action="cancel" data-id="${item.id}">取消工单</button>`);
+        }
+
+        if (!actions.length && item.status === '待执行' && item.sortStatus === '未排序') {
+            actions.push('<span class="action-tip">请先排序</span>');
+        } else if (!actions.length && item.status !== '已取消' && item.materialPrepStatus === '未备料' && item.sortStatus === '已排序') {
+            actions.push('<span class="action-tip">等待前序工单备料完成</span>');
+        }
+
         return actions.join('');
+    }
+
+    canSelectForSorting(item) {
+        return !['已取消', '已完成'].includes(item.status) && item.materialPrepStatus === '未备料';
+    }
+
+    canStartWorkOrder(item) {
+        return item.status === '待执行' &&
+            item.sortStatus !== '未排序' &&
+            item.materialPrepStatus !== '未备料';
+    }
+
+    canTogglePause(item) {
+        return ['执行中', '已暂停'].includes(item.status);
+    }
+
+    canCompleteWorkOrder(item) {
+        return ['执行中', '已暂停'].includes(item.status);
+    }
+
+    canStartMaterialPrep(item) {
+        const currentPrepItem = this.getCurrentPrepItem();
+        return !['已取消', '已完成'].includes(item.status) &&
+            item.sortStatus !== '未排序' &&
+            item.materialPrepStatus === '未备料' &&
+            currentPrepItem &&
+            currentPrepItem.id === item.id;
+    }
+
+    canCompleteMaterialPrep(item) {
+        const currentPrepItem = this.getCurrentPrepItem();
+        return !['已取消', '已完成'].includes(item.status) &&
+            item.materialPrepStatus === '备料中' &&
+            currentPrepItem &&
+            currentPrepItem.id === item.id;
+    }
+
+    canCancelWorkOrder(item) {
+        return item.status === '待执行' && item.materialPrepStatus === '未备料';
+    }
+
+    getWorkOrderStatusText(item) {
+        return item.status;
     }
 
     getWorkOrderStatusClass(status) {
         const statusMap = {
             '待执行': 'pending',
             '执行中': 'processing',
+            '已暂停': 'paused',
             '已完成': 'completed',
             '已取消': 'cancelled'
         };
         return statusMap[status] || 'pending';
+    }
+
+    getSortStatusClass(status) {
+        const statusMap = {
+            '未排序': 'unsorted',
+            '已排序': 'sorted',
+            '已锁定': 'locked'
+        };
+        return statusMap[status] || 'unsorted';
+    }
+
+    getPrepStatusClass(status) {
+        return status === '未备料' ? 'none' : 'done';
+    }
+
+    getPrepStatusText(status) {
+        return status === '未备料' ? '未备料' : '已备料';
     }
 
     getFlowStatusClass(status) {
@@ -655,6 +800,42 @@ class MESWorkOrderPage {
             '全部入库': 'full'
         };
         return statusMap[status] || 'none';
+    }
+
+    toggleRowSelection(id, checked) {
+        if (checked) {
+            this.selectedIds.add(id);
+        } else {
+            this.selectedIds.delete(id);
+        }
+        this.updateSelectionSummary();
+    }
+
+    toggleSelectAllCurrentPage(checked) {
+        this.getCurrentPageData()
+            .filter((item) => this.canSelectForSorting(item))
+            .forEach((item) => {
+                if (checked) {
+                    this.selectedIds.add(item.id);
+                } else {
+                    this.selectedIds.delete(item.id);
+                }
+            });
+
+        this.renderTable();
+    }
+
+    updateSelectionSummary() {
+        const headerCheckbox = document.getElementById('selectPageEligible');
+        const sortButton = document.getElementById('sortOrdersBtn');
+        const eligibleRows = this.getCurrentPageData().filter((item) => this.canSelectForSorting(item));
+        const selectedOnPage = eligibleRows.filter((item) => this.selectedIds.has(item.id));
+
+        sortButton.disabled = this.selectedIds.size === 0;
+
+        headerCheckbox.disabled = eligibleRows.length === 0;
+        headerCheckbox.checked = eligibleRows.length > 0 && selectedOnPage.length === eligibleRows.length;
+        headerCheckbox.indeterminate = selectedOnPage.length > 0 && selectedOnPage.length < eligibleRows.length;
     }
 
     updatePagination() {
@@ -675,9 +856,154 @@ class MESWorkOrderPage {
         this.renderTable();
     }
 
+    openSortModal() {
+        this.sanitizeSelection();
+        if (!this.selectedIds.size) {
+            this.showAlertDialog('工单排序提示', '请先勾选“未排序”或“已排序未备料”的工单。');
+            return;
+        }
+
+        const selectedItems = this.sortWorkOrders(
+            this.workOrderData.filter((item) => this.selectedIds.has(item.id) && this.canSelectForSorting(item))
+        );
+
+        if (!selectedItems.length) {
+            this.showAlertDialog('工单排序提示', '当前勾选工单中没有可排序的数据，请重新选择。');
+            return;
+        }
+
+        this.sortDraftIds = selectedItems.map((item) => item.id);
+        this.renderSortDraft();
+
+        const modal = document.getElementById('sortModal');
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+    }
+
+    renderCurrentQueueList() {
+        const container = document.getElementById('currentQueueList');
+        const queueData = this.getActiveQueueItems();
+        const displayOrderMap = this.getDisplaySortOrderMap();
+
+        if (!queueData.length) {
+            container.innerHTML = '<div class="queue-empty">当前没有已进入备料队列的工单</div>';
+            return;
+        }
+
+        container.innerHTML = queueData.map((item, index) => `
+            <div class="queue-item">
+                <div class="queue-index">${displayOrderMap.get(item.id) || index + 1}</div>
+                <div class="queue-content">
+                    <div class="queue-title">
+                        <strong>${item.workOrderNo}</strong>
+                        <span class="prep-badge ${this.getPrepStatusClass(item.materialPrepStatus)}">${this.getPrepStatusText(item.materialPrepStatus)}</span>
+                        ${this.sortDraftIds.includes(item.id) ? '<span class="queue-flag">本次已勾选</span>' : ''}
+                    </div>
+                    <div class="queue-meta">
+                        <span class="queue-chip">排序序号：${displayOrderMap.get(item.id) ?? '-'}</span>
+                        <span class="queue-chip">工单状态：${this.getWorkOrderStatusText(item)}</span>
+                    </div>
+                    <div class="queue-products">${item.productInfos.map((product) => `${product.materialCode} / ${product.materialName}`).join('；')}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    renderSortDraft() {
+        const container = document.getElementById('sortSelectedList');
+        const displayOrderMap = this.getDisplaySortOrderMap();
+        const draftItems = this.sortDraftIds
+            .map((id) => this.workOrderData.find((item) => item.id === id))
+            .filter(Boolean);
+
+        if (!draftItems.length) {
+            container.innerHTML = '<div class="queue-empty">暂无可排序工单</div>';
+            return;
+        }
+
+        container.innerHTML = draftItems.map((item, index) => `
+            <div class="draft-item">
+                <div class="draft-index">${index + 1}</div>
+                <div class="draft-content">
+                    <div class="draft-title">
+                        <strong>${item.workOrderNo}</strong>
+                        <span class="prep-badge ${this.getPrepStatusClass(item.materialPrepStatus)}">${this.getPrepStatusText(item.materialPrepStatus)}</span>
+                    </div>
+                    <div class="draft-meta">
+                        <span class="draft-chip">当前排序序号：${displayOrderMap.get(item.id) ?? '-'}</span>
+                        <span class="draft-chip">工单状态：${this.getWorkOrderStatusText(item)}</span>
+                    </div>
+                    <div class="draft-products">${item.productInfos.map((product) => `${product.materialCode} / ${product.materialName}`).join('；')}</div>
+                </div>
+                <div class="draft-actions">
+                    <button class="draft-action-btn" data-draft-action="up" data-index="${index}" ${index === 0 ? 'disabled' : ''}>上移</button>
+                    <button class="draft-action-btn" data-draft-action="down" data-index="${index}" ${index === draftItems.length - 1 ? 'disabled' : ''}>下移</button>
+                </div>
+            </div>
+        `).join('');
+
+        container.querySelectorAll('[data-draft-action]').forEach((button) => {
+            button.addEventListener('click', () => {
+                this.moveSortDraft(Number(button.dataset.index), button.dataset.draftAction);
+            });
+        });
+    }
+
+    moveSortDraft(index, direction) {
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= this.sortDraftIds.length) {
+            return;
+        }
+
+        const draft = [...this.sortDraftIds];
+        [draft[index], draft[targetIndex]] = [draft[targetIndex], draft[index]];
+        this.sortDraftIds = draft;
+        this.renderSortDraft();
+    }
+
+    confirmSort() {
+        const sortableItems = this.sortDraftIds
+            .map((id) => this.workOrderData.find((item) => item.id === id))
+            .filter((item) => item && this.canSelectForSorting(item));
+
+        if (!sortableItems.length) {
+            this.showAlertDialog('工单排序提示', '当前没有可确认排序的工单，请重新勾选。');
+            return;
+        }
+
+        const confirmTime = this.getCurrentTime();
+        sortableItems.forEach((item, index) => {
+            item.sortConfirmedAt = confirmTime;
+            item.sortSequence = index + 1;
+            this.syncDerivedFields(item);
+        });
+
+        this.selectedIds.clear();
+        this.hideSortModal();
+        this.applyFilters();
+        this.showMessage(`已完成 ${sortableItems.length} 张工单排序，页面排序序号已按当前队列重算为唯一顺位`, 'success');
+    }
+
+    hideSortModal() {
+        const modal = document.getElementById('sortModal');
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+        this.sortDraftIds = [];
+    }
+
     startWorkOrder(id) {
         const item = this.workOrderData.find((record) => record.id === id);
         if (!item || item.status !== '待执行') {
+            return;
+        }
+
+        if (item.sortStatus === '未排序') {
+            this.showAlertDialog('开始工单提示', `工单“${item.workOrderNo}”尚未排序，需先加入执行排序后才能开始工单。`);
+            return;
+        }
+
+        if (item.materialPrepStatus === '未备料') {
+            this.showAlertDialog('开始工单提示', `工单“${item.workOrderNo}”当前为未备料状态，完成备料后才能开始工单。`);
             return;
         }
 
@@ -687,61 +1013,71 @@ class MESWorkOrderPage {
             return;
         }
 
-        this.showConfirmDialog('确认开始工单', `确定开始工单“${item.workOrderNo}”吗？`, () => {
-            item.status = '执行中';
-            item.startTime = this.getCurrentTime();
-            item.isPaused = false;
-            this.renderTable();
-            this.showMessage('工单已开始执行', 'success');
-        });
+        this.showConfirmDialog(
+            '确认开始工单',
+            `确定开始工单“${item.workOrderNo}”吗？当前工单已排序且已备料，可开始执行。`,
+            () => {
+                item.status = '执行中';
+                item.startTime = this.getCurrentTime();
+                item.isPaused = false;
+                this.syncDerivedFields(item);
+                this.applyFilters();
+                this.showMessage('工单已开始执行', 'success');
+            }
+        );
     }
 
     togglePauseWorkOrder(id) {
         const item = this.workOrderData.find((record) => record.id === id);
-        if (!item || item.status !== '执行中') {
+        if (!item || !['执行中', '已暂停'].includes(item.status)) {
             return;
         }
 
-        const actionText = item.isPaused ? '继续' : '暂停';
+        const isPaused = item.status === '已暂停';
+        const actionText = isPaused ? '继续' : '暂停';
+
+        if (isPaused) {
+            const runningOrder = this.workOrderData.find((record) => record.status === '执行中' && record.id !== id);
+            if (runningOrder) {
+                this.showAlertDialog('继续工单提示', `当前已有执行中的工单“${runningOrder.workOrderNo}”，请先完成或暂停该工单后再继续。`);
+                return;
+            }
+        }
+
         this.showConfirmDialog(`确认${actionText}工单`, `确定要${actionText}工单“${item.workOrderNo}”吗？`, () => {
-            item.isPaused = !item.isPaused;
-            this.renderTable();
+            item.status = isPaused ? '执行中' : '已暂停';
+            item.isPaused = !isPaused;
+            this.applyFilters();
             this.showMessage(`工单已${actionText}`, 'success');
         });
     }
 
     completeWorkOrder(id) {
         const item = this.workOrderData.find((record) => record.id === id);
-        if (!item || item.status !== '执行中') {
+        if (!item || !['执行中', '已暂停'].includes(item.status)) {
             return;
         }
 
         this.showConfirmDialog('确认完成工单', `确定完成工单“${item.workOrderNo}”吗？`, () => {
+            const completeTime = this.getCurrentTime();
             item.status = '已完成';
             item.isPaused = false;
             item.packedQty = item.planQty;
-            item.completeTime = this.getCurrentTime();
+            item.completeTime = completeTime;
             item.pendingOutboundStatus = '全部出库';
             item.inboundStatus = '全部入库';
-            item.pendingOutboundDetails.forEach((detail) => {
-                detail.status = '已出库';
-                if (detail.time === '-') {
-                    detail.time = item.completeTime;
-                }
-            });
-            item.materialOutboundDetails.forEach((detail) => {
-                detail.status = '已出库';
-                if (detail.time === '-') {
-                    detail.time = item.completeTime;
-                }
-            });
-            item.inboundDetails.forEach((detail) => {
-                detail.status = '已入库';
-                if (detail.time === '-') {
-                    detail.time = item.completeTime;
-                }
-            });
-            this.renderTable();
+
+            if (item.materialPrepStatus === '未备料') {
+                item.materialPrepStatus = '备料完成';
+                item.prepStartTime = item.prepStartTime || completeTime;
+                item.prepCompleteTime = completeTime;
+            } else if (item.materialPrepStatus === '备料中') {
+                item.materialPrepStatus = '备料完成';
+                item.prepCompleteTime = completeTime;
+            }
+
+            this.syncDerivedFields(item);
+            this.applyFilters();
             this.showMessage('工单已完成', 'success');
         });
     }
@@ -752,10 +1088,62 @@ class MESWorkOrderPage {
             return;
         }
 
+        if (item.materialPrepStatus !== '未备料') {
+            this.showAlertDialog('取消工单提示', `工单“${item.workOrderNo}”已开始备料或备料完成，不可取消。`);
+            return;
+        }
+
         this.showConfirmDialog('确认取消工单', `确定取消工单“${item.workOrderNo}”吗？取消后状态将变为已取消。`, () => {
             item.status = '已取消';
-            this.renderTable();
+            item.sortConfirmedAt = '';
+            item.sortSequence = null;
+            item.prepStartTime = '';
+            item.prepCompleteTime = '';
+            this.syncDerivedFields(item);
+            this.selectedIds.delete(item.id);
+            this.applyFilters();
             this.showMessage('工单已取消', 'success');
+        });
+    }
+
+    startMaterialPrep(id) {
+        const item = this.workOrderData.find((record) => record.id === id);
+        if (!item) {
+            return;
+        }
+
+        if (!this.canStartMaterialPrep(item)) {
+            this.showAlertDialog('开始备料提示', `工单“${item.workOrderNo}”未到备料顺位，需按排序顺序先完成前序工单备料。`);
+            return;
+        }
+
+        this.showConfirmDialog('确认开始备料', `确定开始工单“${item.workOrderNo}”的包装纸箱备料吗？开始后排序将锁定。`, () => {
+            item.materialPrepStatus = '备料中';
+            item.prepStartTime = this.getCurrentTime();
+            this.syncDerivedFields(item);
+            this.selectedIds.delete(item.id);
+            this.applyFilters();
+            this.showMessage('备料已开始，工单排序已锁定', 'success');
+        });
+    }
+
+    completeMaterialPrep(id) {
+        const item = this.workOrderData.find((record) => record.id === id);
+        if (!item) {
+            return;
+        }
+
+        if (!this.canCompleteMaterialPrep(item)) {
+            this.showAlertDialog('完成备料提示', `工单“${item.workOrderNo}”不是当前备料中的工单，不能直接完成备料。`);
+            return;
+        }
+
+        this.showConfirmDialog('确认完成备料', `确定完成工单“${item.workOrderNo}”的包装纸箱备料吗？`, () => {
+            item.materialPrepStatus = '备料完成';
+            item.prepCompleteTime = this.getCurrentTime();
+            this.syncDerivedFields(item);
+            this.applyFilters();
+            this.showMessage('备料已完成', 'success');
         });
     }
 
@@ -766,6 +1154,7 @@ class MESWorkOrderPage {
         }
 
         this.currentDetailId = id;
+        const displayOrderMap = this.getDisplaySortOrderMap();
         document.getElementById('detailSummary').innerHTML = `
             <div class="detail-basic-item">
                 <span class="detail-basic-label">工单编号：</span>
@@ -773,11 +1162,23 @@ class MESWorkOrderPage {
             </div>
             <div class="detail-basic-item">
                 <span class="detail-basic-label">工单状态：</span>
-                <span class="detail-basic-value"><span class="basic-status-badge ${this.getWorkOrderStatusClass(item.status)}">${item.status}${item.status === '执行中' && item.isPaused ? '（已暂停）' : ''}</span></span>
+                <span class="detail-basic-value"><span class="basic-status-badge ${this.getWorkOrderStatusClass(item.status)}">${this.getWorkOrderStatusText(item)}</span></span>
             </div>
             <div class="detail-basic-item">
-                <span class="detail-basic-label">执行人员：</span>
-                <span class="detail-basic-value">${item.executor}</span>
+                <span class="detail-basic-label">排序序号：</span>
+                <span class="detail-basic-value">${displayOrderMap.get(item.id) ?? '-'}</span>
+            </div>
+            <div class="detail-basic-item">
+                <span class="detail-basic-label">备料状态：</span>
+                <span class="detail-basic-value"><span class="basic-status-badge prep-${this.getPrepStatusClass(item.materialPrepStatus)}">${this.getPrepStatusText(item.materialPrepStatus)}</span></span>
+            </div>
+            <div class="detail-basic-item">
+                <span class="detail-basic-label">备料开始时间：</span>
+                <span class="detail-basic-value">${this.formatDisplayTime(item.prepStartTime)}</span>
+            </div>
+            <div class="detail-basic-item">
+                <span class="detail-basic-label">备料完成时间：</span>
+                <span class="detail-basic-value">${this.formatDisplayTime(item.prepCompleteTime)}</span>
             </div>
             <div class="detail-basic-item">
                 <span class="detail-basic-label">待包装成品信息：</span>
@@ -792,30 +1193,22 @@ class MESWorkOrderPage {
                 <span class="detail-basic-value">${item.packedQty}</span>
             </div>
             <div class="detail-basic-item">
-                <span class="detail-basic-label">同步时间：</span>
-                <span class="detail-basic-value">${item.syncTime}</span>
-            </div>
-            <div class="detail-basic-item">
                 <span class="detail-basic-label">执行开始时间：</span>
-                <span class="detail-basic-value">${item.startTime}</span>
+                <span class="detail-basic-value">${this.formatDisplayTime(item.startTime)}</span>
             </div>
             <div class="detail-basic-item">
                 <span class="detail-basic-label">执行完成时间：</span>
-                <span class="detail-basic-value">${item.completeTime}</span>
+                <span class="detail-basic-value">${this.formatDisplayTime(item.completeTime)}</span>
             </div>
             <div class="detail-basic-item">
-                <span class="detail-basic-label">待包装成品出库状态：</span>
-                <span class="detail-basic-value">${item.pendingOutboundStatus}</span>
-            </div>
-            <div class="detail-basic-item">
-                <span class="detail-basic-label">成品入库状态：</span>
-                <span class="detail-basic-value">${item.inboundStatus}</span>
+                <span class="detail-basic-label">备注：</span>
+                <span class="detail-basic-value">${item.remark || '-'}</span>
             </div>
         `;
 
         const pendingOutboundDetails = item.status === '已取消' ? [] : item.pendingOutboundDetails;
         const materialOutboundDetails = item.status === '已取消' ? [] : item.materialOutboundDetails;
-        const inboundDetails = ['待执行', '已取消'].includes(item.status) ? [] : item.inboundDetails;
+        const inboundDetails = ['待执行', '已取消'].includes(item.status) && item.packedQty === 0 ? [] : item.inboundDetails;
 
         this.renderDetailRows('pendingOutboundTableBody', pendingOutboundDetails, 'outbound');
         this.renderDetailRows('materialOutboundTableBody', materialOutboundDetails, 'material');
@@ -846,7 +1239,7 @@ class MESWorkOrderPage {
                 <td>${row.quantity}</td>
                 <td>${row.areaCode}</td>
                 <td>${row.locationCode}</td>
-                <td>${row.time}</td>
+                <td>${this.formatDisplayTime(row.time)}</td>
                 <td><span class="detail-status-badge ${row.status.includes('已') ? 'done' : 'pending'}">${row.status}</span></td>
                 <td><button class="inline-link" data-category="${category}" data-seq="${row.seq}">查看</button></td>
             </tr>
@@ -864,83 +1257,22 @@ class MESWorkOrderPage {
         if (!item) {
             return;
         }
-        const itemDetailContent = document.getElementById('itemDetailContent');
 
-        const map = {
+        const categoryMap = {
             outbound: item.pendingOutboundDetails,
             material: item.materialOutboundDetails,
             inbound: item.inboundDetails
         };
-        const detail = (map[category] || []).find((record) => record.seq === seq);
+        const detail = (categoryMap[category] || []).find((record) => record.seq === seq);
         if (!detail) {
             return;
         }
 
-        if (category === 'outbound' || category === 'inbound') {
-            this.showPalletDetail(detail, category);
-            return;
-        }
-
-        itemDetailContent.className = 'item-detail-content';
-
-        const quantityLabel = category === 'inbound' ? '入库数量' : '出库数量';
-        const timeLabel = category === 'inbound' ? '入库时间' : '出库时间';
-        const locationLabel = category === 'inbound' ? '入库位置' : '出库位置';
-
-        document.getElementById('itemDetailTitle').textContent = detail.type;
-        itemDetailContent.innerHTML = `
-            <div class="pallet-basic-section">
-                <div class="pallet-basic-title">基本信息</div>
-                <div class="pallet-basic-list">
-                    <div class="pallet-basic-item">
-                        <span class="pallet-basic-label">容器编码：</span>
-                        <span class="pallet-basic-value">${detail.containerCode}</span>
-                    </div>
-                    <div class="pallet-basic-item">
-                        <span class="pallet-basic-label">物料编码：</span>
-                        <span class="pallet-basic-value">${detail.materialCode}</span>
-                    </div>
-                    <div class="pallet-basic-item">
-                        <span class="pallet-basic-label">物料名称：</span>
-                        <span class="pallet-basic-value">${detail.materialName}</span>
-                    </div>
-                    <div class="pallet-basic-item">
-                        <span class="pallet-basic-label">${quantityLabel}：</span>
-                        <span class="pallet-basic-value">${detail.quantity}</span>
-                    </div>
-                    <div class="pallet-basic-item">
-                        <span class="pallet-basic-label">库区编码：</span>
-                        <span class="pallet-basic-value">${detail.areaCode}</span>
-                    </div>
-                    <div class="pallet-basic-item">
-                        <span class="pallet-basic-label">库位编码：</span>
-                        <span class="pallet-basic-value">${detail.locationCode}</span>
-                    </div>
-                    <div class="pallet-basic-item">
-                        <span class="pallet-basic-label">状态：</span>
-                        <span class="pallet-basic-value">${detail.status}</span>
-                    </div>
-                    <div class="pallet-basic-item">
-                        <span class="pallet-basic-label">${timeLabel}：</span>
-                        <span class="pallet-basic-value">${detail.time}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        const modal = document.getElementById('itemDetailModal');
-        modal.style.display = 'flex';
-        modal.classList.add('active');
-    }
-
-    showPalletDetail(detail, category) {
         const quantityLabel = category === 'inbound' ? '入库数量' : '出库数量';
         const timeLabel = category === 'inbound' ? '入库时间' : '出库时间';
         const itemDetailContent = document.getElementById('itemDetailContent');
 
-        itemDetailContent.className = 'item-detail-content';
-
-        document.getElementById('itemDetailTitle').textContent = `${detail.type} - 托盘明细`;
+        document.getElementById('itemDetailTitle').textContent = `${detail.type} - 明细信息`;
         itemDetailContent.innerHTML = `
             <div class="item-detail-section">
                 <div class="pallet-basic-section">
@@ -976,13 +1308,17 @@ class MESWorkOrderPage {
                         </div>
                         <div class="pallet-basic-item">
                             <span class="pallet-basic-label">${timeLabel}：</span>
-                            <span class="pallet-basic-value">${detail.time}</span>
+                            <span class="pallet-basic-value">${this.formatDisplayTime(detail.time)}</span>
+                        </div>
+                        <div class="pallet-basic-item">
+                            <span class="pallet-basic-label">目标位置：</span>
+                            <span class="pallet-basic-value">${detail.targetLocation}</span>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="item-detail-section">
-                <h4 class="item-detail-section-title">托盘内物料明细</h4>
+                <h4 class="item-detail-section-title">容器内物料明细</h4>
                 <div class="item-detail-table-wrap">
                     <table class="item-detail-table">
                         <thead>
@@ -995,13 +1331,13 @@ class MESWorkOrderPage {
                             </tr>
                         </thead>
                         <tbody>
-                            ${detail.itemDetails.map((item) => `
+                            ${detail.itemDetails.map((detailItem) => `
                                 <tr>
-                                    <td>${item.seq}</td>
-                                    <td>${item.snCode}</td>
-                                    <td>${item.materialCode}</td>
-                                    <td>${item.materialName}</td>
-                                    <td>${item.status}</td>
+                                    <td>${detailItem.seq}</td>
+                                    <td>${detailItem.snCode}</td>
+                                    <td>${detailItem.materialCode}</td>
+                                    <td>${detailItem.materialName}</td>
+                                    <td>${detailItem.status}</td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -1099,20 +1435,20 @@ class MESWorkOrderPage {
             top: 20px;
             right: 20px;
             padding: 12px 20px;
-            border-radius: 6px;
+            border-radius: 8px;
             color: white;
             font-weight: 500;
             z-index: 10000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
             animation: slideInRight 0.3s ease;
         `;
 
         if (type === 'success') {
-            messageEl.style.backgroundColor = '#52c41a';
+            messageEl.style.backgroundColor = '#16a34a';
         } else if (type === 'error') {
-            messageEl.style.backgroundColor = '#ff4d4f';
+            messageEl.style.backgroundColor = '#dc2626';
         } else {
-            messageEl.style.backgroundColor = '#1890ff';
+            messageEl.style.backgroundColor = '#2563eb';
         }
 
         document.body.appendChild(messageEl);
@@ -1124,7 +1460,11 @@ class MESWorkOrderPage {
                     messageEl.parentNode.removeChild(messageEl);
                 }
             }, 300);
-        }, 2500);
+        }, 2800);
+    }
+
+    formatDisplayTime(value) {
+        return value || '-';
     }
 
     getCurrentTime() {
